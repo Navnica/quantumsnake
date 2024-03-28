@@ -52,7 +52,8 @@ class MainWindow(flet.UserControl):
                 alignment=flet.MainAxisAlignment.CENTER,
             ),
             bgcolor=flet.colors.TRANSPARENT,
-            border_radius=15
+            alignment=flet.alignment.center,
+            border_radius=15,
         )
 
         self.abc_container = flet.Container(
@@ -72,9 +73,8 @@ class MainWindow(flet.UserControl):
             ),
             bgcolor=flet.colors.GREY_900,
             border_radius=15,
+            margin=flet.Margin(0, 20, 0, 0)
         )
-
-        self.page.on_resize = self.size_expand
 
         return (flet.Column(
             controls=[
@@ -85,7 +85,6 @@ class MainWindow(flet.UserControl):
         ))
 
     def on_abc_click(self, event: flet.ControlEvent) -> None:
-        print(1)
         self.learning_container.visible = False
         self.abc_container.visible = True
         self.learning_container.update()
@@ -98,11 +97,3 @@ class MainWindow(flet.UserControl):
                 self.abc_container.visible = False
                 self.learning_container.update()
                 self.abc_container.update()
-
-    def size_expand(self, event: flet.ControlEvent):
-        current_height: int = self.page.height - 110
-
-        self.learning_container.height = current_height
-        self.abc_container.height = current_height
-        self.abc_container.update()
-        self.learning_container.update()
