@@ -1,17 +1,21 @@
 import flet
 from src.learnin_component import LearningComponent
+from src.data_base_component import DataBaseComponent
+from src.tests_component import TestsComponent
 
 
 def main(page: flet.Page):
     pages: dict[int, flet.UserControl] = {
-        0: LearningComponent()
+        0: LearningComponent(),
+        1: TestsComponent(),
+        2: DataBaseComponent()
     }
 
     def open_page(page_id: int) -> None:
         for pg in pages:
             pages[pg].visible = True if pg == page_id else False
             pages[pg].reload()
-            pages[pg].update()
+            page.update()
 
     def on_destination_change(event: flet.ControlEvent) -> None:
         open_page(int(event.data))
@@ -33,10 +37,15 @@ def main(page: flet.Page):
         bgcolor=flet.colors.TRANSPARENT
     )
 
+    #[page.add(flet.Container(value, expand=True)) for key, value in pages.items()]
+
     page.add(
         flet.Container(
-            pages[0],
-            expand=True),
+            flet.Column(
+                controls=[page for page_id, page in pages.items()], 
+                alignment=flet.MainAxisAlignment.CENTER), 
+            expand=True
+            ),
         flet.Container(
             content=navigation_bar,
             bgcolor=flet.colors.GREY_900,
