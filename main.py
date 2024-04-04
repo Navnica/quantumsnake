@@ -14,6 +14,9 @@ def main(page: flet.Page):
     def open_page(page_id: int) -> None:
         for pg in pages:
             pages[pg].visible = True if pg == page_id else False
+
+            page.controls[0].content.alignment = flet.MainAxisAlignment.START if page_id == 2 else flet.MainAxisAlignment.CENTER
+
             pages[pg].reload()
             page.update()
 
@@ -41,9 +44,9 @@ def main(page: flet.Page):
 
     page.add(
         flet.Container(
-            flet.Column(
+            content=flet.Column(
                 controls=[page for page_id, page in pages.items()], 
-                alignment=flet.MainAxisAlignment.CENTER), 
+                alignment=flet.MainAxisAlignment.CENTER),
             expand=True
             ),
         flet.Container(
