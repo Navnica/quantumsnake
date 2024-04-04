@@ -33,20 +33,48 @@ class AbcComponent(flet.UserControl):
         return column
 
     def on_letter_pressed(self, event: flet.ControlEvent) -> None:
+        def video_replay() -> None:
+            video.jump_to(0)
+
         letter: str = event.control.text
-        d = flet.AlertDialog(
+
+        video: flet.Video = flet.Video(
+            playlist=[flet.VideoMedia(f'./assets/abc/{letter.lower()}.mp4')],
+            autoplay=True,
+            show_controls=False,
+            aspect_ratio=4 / 3,
+        )
+
+        alert_dialog: flet.AlertDialog = flet.AlertDialog(
             modal=False,
-            content=flet.Video(
-                playlist=[flet.VideoMedia('./assets/abc/' + letter.lower() + '.mp4')],
-                autoplay=True,
-                show_controls=False,
-                height=200,
-                aspect_ratio=4/3
+            content=flet.Column(
+                controls=[
+                    video
+                    ,
+                    flet.Row(
+                        controls=[
+                            flet.IconButton(
+                                icon=flet.icons.REPLAY,
+                                icon_size=20,
+                                icon_color=flet.colors.GREY,
+                                style=flet.ButtonStyle(
+                                    shape=flet.RoundedRectangleBorder(radius=13),
+                                    bgcolor=flet.colors.GREY_800
+                                ),
+                                on_click=lambda e: video_replay()
+                            )
+                        ],
+                        alignment=flet.MainAxisAlignment.CENTER
+                    )
+
+                ],
+                alignment=flet.MainAxisAlignment.START,
+                height=240
             )
         )
 
-        self.page.dialog = d
-        d.open = True
+        self.page.dialog = alert_dialog
+        alert_dialog.open = True
         self.page.update()
 
 
