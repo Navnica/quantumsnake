@@ -1,4 +1,5 @@
 import flet
+from settings import SETTINGS
 
 
 class AbcComponent(flet.UserControl):
@@ -39,7 +40,7 @@ class AbcComponent(flet.UserControl):
         letter: str = event.control.text
 
         video: flet.Video = flet.Video(
-            playlist=[flet.VideoMedia(f'./assets/abc/{letter.lower()}.mp4')],
+            playlist=[flet.VideoMedia(f'{SETTINGS.VIDEO_DIR_PATH}/abc/{letter.lower()}.mp4')],
             autoplay=True,
             show_controls=False,
             aspect_ratio=4 / 3,

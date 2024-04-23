@@ -8,16 +8,13 @@ def main(page: flet.Page):
     pages: dict[int, flet.UserControl] = {
         0: LearningComponent(),
         1: TestsComponent(),
-        2: DataBaseComponent()
+        2: flet.Container(content=DataBaseComponent(), visible=False, expand=True)
     }
 
     def open_page(page_id: int) -> None:
         for pg in pages:
             pages[pg].visible = True if pg == page_id else False
 
-            page.controls[0].content.alignment = flet.MainAxisAlignment.START if page_id == 2 else flet.MainAxisAlignment.CENTER
-
-            pages[pg].reload()
             page.update()
 
     def on_destination_change(event: flet.ControlEvent) -> None:
