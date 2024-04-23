@@ -1,13 +1,11 @@
 import flet
 
 
-class TestsComponent(flet.UserControl):
-    def __init__(self) -> None:
-        super().__init__()
-
-    def build(self) -> None:
-        self.visible = False
-        return flet.Text("TestsComponent")
-
+class TestsComponent(flet.Column):
     def reload(self) -> None:
         pass
+
+    def build(self):
+        self.controls.append(
+            flet.Text('TestsComponent')
+        )

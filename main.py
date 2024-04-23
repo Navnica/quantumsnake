@@ -1,59 +1,69 @@
 import flet
-from src.learnin_component import LearningComponent
-from src.data_base_component import DataBaseComponent
 from src.tests_component import TestsComponent
+from src.database_component import DatabaseComponent
+from src.learning_component import LearningComponent
 
 
-def main(page: flet.Page):
-    pages: dict[int, flet.UserControl] = {
-        0: LearningComponent(),
-        1: TestsComponent(),
-        2: flet.Container(content=DataBaseComponent(), visible=False, expand=True)
-    }
-
-    def open_page(page_id: int) -> None:
-        for pg in pages:
-            pages[pg].visible = True if pg == page_id else False
-
-            page.update()
-
-    def on_destination_change(event: flet.ControlEvent) -> None:
-        open_page(int(event.data))
+def main(page: flet.Page) -> None:
+    # Page settings
 
     page.title = "QuantumSnake"
     page.window_height = 600
     page.window_width = 400
     page.vertical_alignment = flet.MainAxisAlignment.END
     page.horizontal_alignment = flet.CrossAxisAlignment.CENTER
-    page.theme_mode = flet.ThemeMode.DARK
 
-    navigation_bar: flet.NavigationBar = flet.NavigationBar(
-        destinations=[
-            flet.NavigationDestination(icon=flet.icons.SCHOOL, label='Обучение'),
-            flet.NavigationDestination(icon=flet.icons.OFFLINE_PIN, label='Тесты'),
-            flet.NavigationDestination(icon=flet.icons.BOOK, label='База знаний')
-        ],
-        on_change=on_destination_change,
-        bgcolor=flet.colors.TRANSPARENT
-    )
+    # Defs
 
-    #[page.add(flet.Container(value, expand=True)) for key, value in pages.items()]
+    def change_page(event: flet.ControlEvent) -> None:
+        for pg in pages:
+            pg.visible = False
+            pg.content.reload()
+
+        pages[int(event.data)].visible = True
+
+        page.update()
+
+    # Variables
+
+    pages: list = [
+        flet.Container(
+            content=LearningComponent(),
+            visible=True,
+            expand=True,
+        ),
+        flet.Container(
+            content=TestsComponent(),
+            visible=False,
+            expand=True
+        ),
+        flet.Container(
+            content=DatabaseComponent(),
+            visible=False,
+            expand=True
+        )
+    ]
 
     page.add(
         flet.Container(
+            expand=True,
             content=flet.Column(
-                controls=[page for page_id, page in pages.items()], 
-                alignment=flet.MainAxisAlignment.CENTER),
-            expand=True
-            ),
+                controls=[pg for pg in pages],
+            )
+        ),
         flet.Container(
-            content=navigation_bar,
-            bgcolor=flet.colors.GREY_900,
-            border_radius=15,
-            margin=flet.Margin(0, 20, 0, 0)
+            border_radius=10,
+            content=flet.NavigationBar(
+                destinations=[
+                    flet.NavigationDestination(icon=flet.icons.SCHOOL, label='Обучение'),
+                    flet.NavigationDestination(icon=flet.icons.OFFLINE_PIN, label='Тесты'),
+                    flet.NavigationDestination(icon=flet.icons.BOOK, label='База знаний')
+                ],
+                on_change=change_page
+            )
         )
     )
 
 
 if __name__ == '__main__':
-    flet.app(target=main)
+    flet.app(main)
