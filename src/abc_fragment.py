@@ -23,7 +23,7 @@ class ABCFragment(flet.Column):
                     height=250,
                     controls=[
                         flet.Video(
-                            playlist=[flet.VideoMedia(f'{SETTINGS.VIDEO_DIR_PATH}/{'abc' if not word else 'words'}/{event.control.data}.mp4')],
+                            playlist=[flet.VideoMedia(f'{SETTINGS.VIDEO_DIR_PATH}/{"abc" if not word else "words"}/{event.control.data}.mp4')],
                             autoplay=True,
                             show_controls=False,
                             aspect_ratio=3 / 2,
