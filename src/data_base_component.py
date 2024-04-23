@@ -1,6 +1,7 @@
 import flet
 import ftplib
 from settings import SETTINGS
+from random import randint
 
 
 class DataBaseComponent(flet.UserControl):
@@ -8,19 +9,10 @@ class DataBaseComponent(flet.UserControl):
         super().__init__()
 
     def build(self):
-        def on_search_bar_change(event: flet.ControlEvent):
-            search_bar.controls.append(flet.Text('s'))
-            search_bar.update()
-
-        def on_search_bar_tap(event: flet.ControlEvent):
-            search_bar.controls.clear()
-            search_bar.update()
-
-        def on_word_press(event: flet.ControlEvent):
+        def on_word_press(letter: str):
             def video_replay(event: flet.ControlEvent) -> None:
                 video.jump_to(0)
 
-            letter: str = event.control.text
 
             video: flet.Video = flet.Video(
                 playlist=[flet.VideoMedia(f'{SETTINGS.VIDEO_DIR_PATH}/words/{letter}.mp4')],
@@ -67,20 +59,21 @@ class DataBaseComponent(flet.UserControl):
             passwd=SETTINGS.FTP_SETTINGS.PASSWORD
         )
 
-        video_list: list[str] = ftp.nlst('words')[25:]
+        video_list: list[str] = ftp.nlst('words')
         video_list = [word.replace('.mp4', '').replace('words', '').replace('/', '').replace('..', '').replace('.', '')
                       for word in video_list]
 
         column: flet.Column = flet.Column(alignment=flet.MainAxisAlignment.CENTER)
         new_row: flet.Row = flet.Row(alignment=flet.MainAxisAlignment.CENTER)
 
-        for word in video_list:
+        for word in video_list[25:]:
             if word == '':
+                video_list.remove(word)
                 continue
 
             new_row.controls.append(flet.FilledButton(
                 text=word,
-                on_click=on_word_press,
+                on_click=lambda _: on_word_press(word),
                 style=flet.ButtonStyle(
                     shape=flet.RoundedRectangleBorder(radius=8),
                     bgcolor=flet.colors.GREY_800,
@@ -94,11 +87,12 @@ class DataBaseComponent(flet.UserControl):
 
         column.controls.append(new_row)
 
-        search_bar: flet.SearchBar = flet.SearchBar(
-            height=40,
-            full_screen=False,
-            on_change=on_search_bar_change,
-            on_tap=on_search_bar_tap
+        search_bar = flet.SearchBar(
+            view_elevation=4,
+            divider_color=flet.colors.AMBER,
+            controls=[
+                flet.ListTile(title=flet.Text(value=word), data=word, on_click=lambda _: on_word_press(word)) for word in video_list
+            ]
         )
 
         return flet.Column(
