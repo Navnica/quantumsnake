@@ -3,7 +3,7 @@ import ftplib
 from settings import SETTINGS
 
 
-class DatabaseComponent(flet.Column):
+class DatabaseComponent(flet.SafeArea):
     def reload(self) -> None:
         pass
 
@@ -11,24 +11,24 @@ class DatabaseComponent(flet.Column):
         # Defs
 
         def on_search_bar_submit(event: flet.ControlEvent) -> None:
-            search_bar.controls[0].controls.clear()
+            search_bar_content.controls.clear()
 
             if event.data == '':
-                search_bar.controls[0].controls.extend([flet.ListTile(
+                search_bar_content.controls.extend([flet.ListTile(
                     title=flet.Text(word),
                     data=word,
                     on_click=show_word_video) for word in words])
             else:
                 for word in words:
                     if event.data.lower() in word.lower():
-                        search_bar.controls[0].controls.append(flet.ListTile(
+                        search_bar_content.controls.append(flet.ListTile(
                             title=flet.Text(word),
                             data=word,
                             on_click=show_word_video
                         )
-                    )
+                        )
 
-            search_bar.update()
+            self.update()
 
         def show_word_video(event: flet.ControlEvent) -> None:
             self.page.session.get('show_letter')(event, True)
@@ -71,23 +71,20 @@ class DatabaseComponent(flet.Column):
 
         word_column.controls.append(new_row)
 
-        search_bar: flet.SearchBar = flet.SearchBar(
-            height=40,
-            bar_leading=flet.Icon(name=flet.icons.SEARCH),
-            view_shape=flet.RoundedRectangleBorder(radius=10),
-            on_change=on_search_bar_submit,
-            controls=[flet.Column()]
+        search_bar_content: flet.Column = flet.Column()
+        search_bar_content.controls.extend(
+            [flet.ListTile(title=flet.Text(word), data=word, on_click=show_word_video) for word in words]
         )
 
-        search_bar.controls[0].controls.extend([flet.ListTile(title=flet.Text(word), data=word, on_click=show_word_video) for word in words])
-
-        self.controls.append(
-            flet.SafeArea(
-                content=flet.Column(
-                    controls=[
-                        search_bar,
-                        word_column
-                    ]
-                )
-            )
+        self.content = flet.Column(
+            controls=[
+                flet.SearchBar(
+                    height=40,
+                    bar_leading=flet.Icon(name=flet.icons.SEARCH),
+                    view_shape=flet.RoundedRectangleBorder(radius=10),
+                    on_change=on_search_bar_submit,
+                    controls=[search_bar_content]
+                ),
+                word_column
+            ]
         )
