@@ -2,6 +2,7 @@ import flet
 from src.tests_component import TestsComponent
 from src.database_component import DatabaseComponent
 from src.learning_component import LearningComponent
+from src.settings_fragment import SettingsFragment
 
 
 def main(page: flet.Page) -> None:
@@ -41,6 +42,11 @@ def main(page: flet.Page) -> None:
             content=DatabaseComponent(),
             visible=False,
             expand=True
+        ),
+        flet.Container(
+            content=SettingsFragment(),
+            visible=False,
+            expand=True
         )
     ]
 
@@ -57,12 +63,14 @@ def main(page: flet.Page) -> None:
                 destinations=[
                     flet.NavigationDestination(icon=flet.icons.SCHOOL, label='Обучение'),
                     flet.NavigationDestination(icon=flet.icons.OFFLINE_PIN, label='Тесты'),
-                    flet.NavigationDestination(icon=flet.icons.BOOK, label='База знаний')
+                    flet.NavigationDestination(icon=flet.icons.BOOK, label='База знаний'),
+                    flet.NavigationDestination(icon=flet.icons.SETTINGS, label='Настройки')
                 ],
                 on_change=change_page
             )
         )
     )
+
 
 
 if __name__ == '__main__':
