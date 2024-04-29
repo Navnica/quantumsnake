@@ -1,6 +1,6 @@
 class SETTINGS:
     DEBUG: bool = True
-    VIDEO_DIR_PATH: str = 'http://wh16399.web1.maze-host.ru/quantumsnakevideos'
+    SERVER_URL: str = 'http://wh16399.web1.maze-host.ru/'
 
     class FTP_SETTINGS:
         ADDRESS: str = '92.53.99.174'

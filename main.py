@@ -3,6 +3,7 @@ from src.tests_component import TestsComponent
 from src.database_component import DatabaseComponent
 from src.learning_component import LearningComponent
 from src.settings_fragment import SettingsFragment
+from src.auth_fragment import AuthFragment
 
 
 def main(page: flet.Page) -> None:
@@ -30,7 +31,7 @@ def main(page: flet.Page) -> None:
     pages: list = [
         flet.Container(
             content=LearningComponent(),
-            visible=True,
+            visible=False,
             expand=True,
         ),
         flet.Container(
@@ -47,6 +48,13 @@ def main(page: flet.Page) -> None:
             content=SettingsFragment(),
             visible=False,
             expand=True
+        ),
+
+        flet.Container(
+            content=AuthFragment(),
+            visible=True,
+            expand=True,
+            animate_opacity=300
         )
     ]
 
@@ -58,6 +66,7 @@ def main(page: flet.Page) -> None:
             )
         ),
         flet.Container(
+            visible=False,
             border_radius=10,
             content=flet.NavigationBar(
                 destinations=[
@@ -70,7 +79,6 @@ def main(page: flet.Page) -> None:
             )
         )
     )
-
 
 
 if __name__ == '__main__':
