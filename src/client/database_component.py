@@ -44,8 +44,15 @@ class DatabaseComponent(flet.SafeArea):
         words: list = [word.replace('words/', '').replace('.mp4', '') for word in ftp.nlst('words')]
         ftp.close()
 
-        words.remove('.')
-        words.remove('..')
+
+
+        try:
+            words.remove('..')
+            words.remove('../..')
+
+        except ValueError:
+            pass
+
         words.sort()
 
         word_column: flet.Column = flet.Column(alignment=flet.MainAxisAlignment.CENTER)

@@ -1,9 +1,9 @@
 import flet
-from src.tests_component import TestsComponent
-from src.database_component import DatabaseComponent
-from src.learning_component import LearningComponent
-from src.settings_fragment import SettingsFragment
-from src.auth_fragment import AuthFragment
+from src.client.tests_component import TestsComponent
+from src.client.database_component import DatabaseComponent
+from src.client.learning_component import LearningComponent
+from src.client.settings_component import SettingsComponent
+from src.client.auth_component import AuthComponent
 
 
 def main(page: flet.Page) -> None:
@@ -28,6 +28,8 @@ def main(page: flet.Page) -> None:
 
     # Variables
 
+    page.session.set('change_page', change_page)
+
     pages: list = [
         flet.Container(
             content=LearningComponent(),
@@ -45,13 +47,13 @@ def main(page: flet.Page) -> None:
             expand=True
         ),
         flet.Container(
-            content=SettingsFragment(),
+            content=SettingsComponent(),
             visible=False,
             expand=True
         ),
 
         flet.Container(
-            content=AuthFragment(),
+            content=AuthComponent(),
             visible=True,
             expand=True,
             animate_opacity=300

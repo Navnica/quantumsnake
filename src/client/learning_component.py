@@ -1,7 +1,7 @@
 import flet
-from src.abc_fragment import ABCFragment
-from src.grammar_fragment import GrammarFragment
-from src.dict_fragment import DictFragment
+from src.client.abc_fragment import ABCFragment
+from src.client.grammar_fragment import GrammarFragment
+from src.client.dict_fragment import DictFragment
 
 
 class LearningComponent(flet.Column):

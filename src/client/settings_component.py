@@ -1,7 +1,8 @@
 import flet
+from src.database.models import UserAuth
 
 
-class SettingsFragment(flet.SafeArea):
+class SettingsComponent(flet.SafeArea):
     def reload(self) -> None:
         pass
 
@@ -57,13 +58,35 @@ class SettingsFragment(flet.SafeArea):
                             flet.Row(
                                 alignment=flet.MainAxisAlignment.CENTER,
                                 controls=[
-                                    flet.Text(value="Тема приложения", color=flet.colors.PRIMARY, weight=flet.FontWeight.BOLD),
+                                    flet.Text(value="Аккаунт", color=flet.colors.PRIMARY,
+                                              weight=flet.FontWeight.BOLD),
+                                    flet.Icon(name=flet.icons.ACCOUNT_CIRCLE)
+                                ]
+                            ),
+                            flet.Text(color='red', value='Ошибка загрузки')
+                        ]
+                    )
+                ),
+
+                flet.Container(
+                    bgcolor=flet.colors.SURFACE_VARIANT,
+                    border_radius=10,
+                    padding=10,
+                    content=flet.Column(
+                        horizontal_alignment=flet.CrossAxisAlignment.CENTER,
+                        controls=[
+                            flet.Row(
+                                alignment=flet.MainAxisAlignment.CENTER,
+                                controls=[
+                                    flet.Text(value="Тема приложения", color=flet.colors.PRIMARY,
+                                              weight=flet.FontWeight.BOLD),
                                     flet.Icon(name=flet.icons.PALETTE)
                                 ]
                             ),
                             color_column
                         ]
                     )
-                )
+                ),
+
             ]
         )
