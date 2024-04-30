@@ -2,7 +2,7 @@ import flet
 import requests
 import asyncio
 from settings import SETTINGS
-import blake3
+from src.tools import password_hasher
 
 
 class AuthComponent(flet.SafeArea):
@@ -69,7 +69,7 @@ class AuthComponent(flet.SafeArea):
 
             user: UserAuth = UserAuth.get_or_none(username=login_text_field.value)
 
-            if user is None or user.password != blake3.blake3(password_text_field.value.encode()).hexdigest():
+            if user is None or password_hasher.hash_password(password_text_field.value) != user.password:
                 login_text_field.error_text = 'Имя пользователя или пароль неверны'
                 self.update()
                 return
@@ -116,7 +116,7 @@ class AuthComponent(flet.SafeArea):
 
             user = UserAuth.create(
                 username=login_text_field.value,
-                password=blake3.blake3(password_text_field.value.encode()).hexdigest()
+                password=password_hasher.hash_password(password_text_field.value),
             )
             user.save()
 
