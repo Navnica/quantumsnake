@@ -1,9 +1,9 @@
 import flet
+from src.client.auth_component import AuthComponent
 from src.client.tests_component import TestsComponent
 from src.client.database_component import DatabaseComponent
 from src.client.learning_component import LearningComponent
 from src.client.settings_component import SettingsComponent
-from src.client.auth_component import AuthComponent
 
 
 def main(page: flet.Page) -> None:
@@ -17,54 +17,63 @@ def main(page: flet.Page) -> None:
 
     # Defs
 
-    def change_page(event: flet.ControlEvent) -> None:
-        for pg in pages:
+    def change_page(event: flet.ControlEvent, require_page: int = None) -> None:
+        require_page = int(event.data) if not require_page else require_page
+
+        for pg in page.controls[0].content.controls:
             pg.visible = False
             pg.content.reload()
 
-        pages[int(event.data)].visible = True
+        page.controls[0].content.controls[int(require_page)].visible = True
+
+        page.update()
+
+    def create_pages() -> None:
+        page.controls[0].content.controls.clear()
+        page.controls[-1].visible = True
+
+        page.controls[0].content.controls.extend([
+            flet.Container(
+                content=LearningComponent(),
+                visible=True,
+                expand=True,
+            ),
+            flet.Container(
+                content=TestsComponent(),
+                visible=False,
+                expand=True
+            ),
+            flet.Container(
+                content=DatabaseComponent(),
+                visible=False,
+                expand=True
+            ),
+            flet.Container(
+                content=SettingsComponent(),
+                visible=False,
+                expand=True
+            ),
+        ])
 
         page.update()
 
     # Variables
 
     page.session.set('change_page', change_page)
-
-    pages: list = [
-        flet.Container(
-            content=LearningComponent(),
-            visible=False,
-            expand=True,
-        ),
-        flet.Container(
-            content=TestsComponent(),
-            visible=False,
-            expand=True
-        ),
-        flet.Container(
-            content=DatabaseComponent(),
-            visible=False,
-            expand=True
-        ),
-        flet.Container(
-            content=SettingsComponent(),
-            visible=False,
-            expand=True
-        ),
-
-        flet.Container(
-            content=AuthComponent(),
-            visible=True,
-            expand=True,
-            animate_opacity=300
-        )
-    ]
+    page.session.set('create_pages', create_pages)
 
     page.add(
         flet.Container(
             expand=True,
             content=flet.Column(
-                controls=[pg for pg in pages],
+                controls=[
+                    flet.Container(
+                        content=AuthComponent(),
+                        visible=True,
+                        expand=True,
+                        animate_opacity=300
+                    )
+                ]
             )
         ),
         flet.Container(

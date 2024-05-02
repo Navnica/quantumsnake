@@ -63,6 +63,7 @@ class SettingsComponent(flet.SafeArea):
                                     flet.Icon(name=flet.icons.ACCOUNT_CIRCLE)
                                 ]
                             ),
+                            flet.Text(value=self.page.session.get('username')),
                             flet.Text(color='red', value='Ошибка загрузки')
                         ]
                     )

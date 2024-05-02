@@ -24,11 +24,7 @@ class AuthComponent(flet.SafeArea):
 
         def end_animate(event: flet.ControlEvent) -> None:
             if self.page.session.get('auth'):
-                self.page.controls[0].content.controls[0].visible = True
-                self.page.controls[1].visible = True
-                self.visible = False
-                event.data = 0
-                self.page.session.get('change_page')(event)
+                self.page.session.get('create_pages')()
                 return
 
             self.content = auth_content
