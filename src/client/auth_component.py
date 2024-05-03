@@ -32,7 +32,15 @@ class AuthComponent(flet.SafeArea):
 
         async def check_connection():
             await asyncio.sleep(3)
-            if requests.get(SETTINGS.SERVER_URL).status_code == 200:
+
+            response_status_code: int = 0
+
+            try:
+                response_status_code = requests.get(SETTINGS.SERVER_URL).status_code
+            except requests.exceptions.ConnectionError:
+                pass
+
+            if response_status_code == 200:
                 set_connection_info(fail=False)
                 self.page.loop.create_task(start_animation())
 
