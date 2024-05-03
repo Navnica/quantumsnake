@@ -1,5 +1,5 @@
 import flet
-import ftplib
+import requests
 from settings import SETTINGS
 
 
@@ -15,18 +15,18 @@ class DatabaseComponent(flet.SafeArea):
 
             if event.data == '':
                 search_bar_content.controls.extend([flet.ListTile(
-                    title=flet.Text(word),
-                    data=word,
+                    title=flet.Text(word['name']),
+                    data=word['url'],
                     on_click=show_word_video) for word in words])
             else:
                 for word in words:
-                    if event.data.lower() in word.lower():
+                    if event.data.lower() in word['name'].lower():
                         search_bar_content.controls.append(flet.ListTile(
-                            title=flet.Text(word),
-                            data=word,
+                            title=flet.Text(word['name']),
+                            data=word['url'],
                             on_click=show_word_video
                         )
-                        )
+                    )
 
             self.update()
 
@@ -35,34 +35,20 @@ class DatabaseComponent(flet.SafeArea):
 
         # Variables
 
-        ftp: ftplib.FTP = ftplib.FTP(
-            host=SETTINGS.FTP_SETTINGS.ADDRESS,
-            user=SETTINGS.FTP_SETTINGS.USER,
-            passwd=SETTINGS.FTP_SETTINGS.PASSWORD
-        )
+        words: list = []
 
-        words: list = [word.replace('words/', '').replace('.mp4', '') for word in ftp.nlst('words')]
-        ftp.close()
-
-
-
-        try:
-            words.remove('..')
-            words.remove('../..')
-
-        except ValueError:
-            pass
-
-        words.sort()
+        for word in requests.get(SETTINGS.SERVER_URL + '/video_file/get_all', params={'token': SETTINGS.TOKEN}).json():
+            if word['is_word']:
+                words.append(word)
 
         word_column: flet.Column = flet.Column(alignment=flet.MainAxisAlignment.CENTER)
         new_row: flet.Row = flet.Row(alignment=flet.MainAxisAlignment.SPACE_BETWEEN)
 
-        for word in words[26:]:
+        for word in words:
             new_row.controls.append(
                 flet.FilledButton(
-                    text=word,
-                    data=word,
+                    text=word['name'],
+                    data=word['url'],
                     on_click=show_word_video,
                     style=flet.ButtonStyle(
                         shape=flet.RoundedRectangleBorder(radius=10),
@@ -80,7 +66,7 @@ class DatabaseComponent(flet.SafeArea):
 
         search_bar_content: flet.Column = flet.Column()
         search_bar_content.controls.extend(
-            [flet.ListTile(title=flet.Text(word), data=word, on_click=show_word_video) for word in words]
+            [flet.ListTile(title=flet.Text(word['name']), data=word['url'], on_click=show_word_video) for word in words]
         )
 
         self.content = flet.Column(

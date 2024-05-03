@@ -1,4 +1,2 @@
 flet==0.22.*
-peewee==3.17.3
 requests==2.31.0
-PyMySQL==1.1.0

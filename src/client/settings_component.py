@@ -1,5 +1,4 @@
 import flet
-from src.database.models import UserAuth
 
 
 class SettingsComponent(flet.SafeArea):

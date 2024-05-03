@@ -1,6 +1,6 @@
 import flet
-import ftplib
 from settings import SETTINGS
+import requests
 
 
 class ABCFragment(flet.Column):
@@ -23,7 +23,7 @@ class ABCFragment(flet.Column):
                     height=250,
                     controls=[
                         flet.Video(
-                            playlist=[flet.VideoMedia(f'{SETTINGS.SERVER_URL}quantumsnakevideos/{"abc" if not word else "words"}/{event.control.data}.mp4')],
+                            playlist=[flet.VideoMedia(resource=event.control.data)],
                             autoplay=True,
                             show_controls=False,
                             aspect_ratio=3 / 2,
@@ -49,21 +49,14 @@ class ABCFragment(flet.Column):
 
         # Variables
 
-        ftp: ftplib.FTP = ftplib.FTP(
-            host=SETTINGS.FTP_SETTINGS.ADDRESS,
-            user=SETTINGS.FTP_SETTINGS.USER,
-            passwd=SETTINGS.FTP_SETTINGS.PASSWORD
-        )
+        letters: list = []
 
-        letters: list = [word.replace('abc/', '').replace('.mp4', '').replace('.', '') for word in ftp.nlst('abc')]
-        ftp.close()
+        for letter in requests.get(SETTINGS.SERVER_URL + '/video_file/get_all', params={'token': SETTINGS.TOKEN}).json():
+            if not letter['is_word']:
+                letters.append(letter)
 
-        for letter in letters:
-            if letter == '':
-                letters.remove(letter)
-
-        letters.sort()
-        letters.insert(6, 'ё')
+        letters.sort(key=lambda x: x['name'])
+        letters.insert(6, letters[-1])
         letters = letters[:-1]
 
         abc_column: flet.Column = flet.Column(alignment=flet.MainAxisAlignment.CENTER, )
@@ -75,9 +68,9 @@ class ABCFragment(flet.Column):
                     width=63,
                     content=flet.FilledButton(
                         width=60,
-                        text=letter.upper(),
+                        text=letter['name'].upper(),
                         on_click=show_letter,
-                        data=letter.lower(),
+                        data=letter['url'],
                         style=flet.ButtonStyle(
                             shape=flet.RoundedRectangleBorder(radius=8),
                             bgcolor=flet.colors.SURFACE_VARIANT,

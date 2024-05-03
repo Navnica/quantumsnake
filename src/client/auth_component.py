@@ -2,7 +2,6 @@ import flet
 import requests
 import asyncio
 from settings import SETTINGS
-from src.tools import password_hasher
 
 
 class AuthComponent(flet.SafeArea):
@@ -58,21 +57,29 @@ class AuthComponent(flet.SafeArea):
                 if password_text_field.value == '':
                     password_text_field.error_text = 'Поле пусто'
 
-                self.update()
-                return
+            else:
+                response: requests.Response = requests.post(
+                    url=SETTINGS.SERVER_URL + '/user_auth/login',
+                    json={
+                        'username': login_text_field.value,
+                        'password': password_text_field.value,
+                    },
+                    params={'token': SETTINGS.TOKEN}
+                )
 
-            from src.database.models import UserAuth
+                match response.status_code:
+                    case 200:
+                        if response.json():
+                            self.page.session.set('auth', True)
+                            self.page.session.set('username', login_text_field.value)
+                            self.opacity = 0
 
-            user: UserAuth = UserAuth.get_or_none(username=login_text_field.value)
+                        else:
+                            login_text_field.error_text = 'Неверное имя пользователя или пароль'
 
-            if user is None or password_hasher.hash_password(password_text_field.value) != user.password:
-                login_text_field.error_text = 'Имя пользователя или пароль неверны'
-                self.update()
-                return
+                    case 401:
+                        pass
 
-            self.page.session.set('auth', True)
-            self.page.session.set('username', user.username)
-            self.opacity = 0
             self.page.update()
 
         async def on_registration_click(event: flet.ControlEvent) -> None:
@@ -86,7 +93,12 @@ class AuthComponent(flet.SafeArea):
             password_text_field: flet.TextField = auth_content.controls[0].content.controls[1]
             confirm_password_text_field: flet.TextField = auth_content.controls[0].content.controls[2]
 
-            if login_text_field.value == '' or password_text_field.value == '' or confirm_password_text_field.value == '':
+            if (
+                    login_text_field.value == '' or
+                    password_text_field.value == '' or
+                    confirm_password_text_field.value == '' or
+                    password_text_field.value != confirm_password_text_field.value
+            ):
                 if login_text_field.value == '':
                     login_text_field.error_text = 'Поле пусто'
 
@@ -96,29 +108,28 @@ class AuthComponent(flet.SafeArea):
                 if confirm_password_text_field.value == '':
                     confirm_password_text_field.error_text = 'Поле пусто'
 
-                self.update()
-                return
+                elif password_text_field.value != confirm_password_text_field.value:
+                    confirm_password_text_field.error_text = 'Пароли не совпадают'
 
-            if password_text_field.value != confirm_password_text_field.value:
-                confirm_password_text_field.error_text = 'Пароли не совпадают'
-                self.update()
-                return
+            else:
+                response: requests.Response = requests.post(
+                    url=SETTINGS.SERVER_URL + '/user_auth/register',
+                    json={
+                        'username': login_text_field.value,
+                        'password': password_text_field.value,
+                    },
+                    params={'token': SETTINGS.TOKEN}
+                )
 
-            from src.database.models import UserAuth
-            if UserAuth.get_or_none(username=login_text_field.value):
-                login_text_field.error_text = 'Имя занято'
-                self.update()
-                return
+                match response.status_code:
+                    case 200:
+                        self.page.session.set('username', login_text_field.value)
+                        self.page.session.set('auth', True)
+                        self.opacity = 0
 
-            user = UserAuth.create(
-                username=login_text_field.value,
-                password=password_hasher.hash_password(password_text_field.value),
-            )
-            user.save()
+                    case 409:
+                        login_text_field.error_text = 'Имя пользователя занято'
 
-            self.page.session.set('username', user.username)
-            self.page.session.set('auth', True)
-            self.opacity = 0
             self.page.update()
 
         self.animate_opacity = flet.Animation(duration=200)
