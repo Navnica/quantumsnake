@@ -4,6 +4,7 @@ from src.client.tests_component import TestsComponent
 from src.client.database_component import DatabaseComponent
 from src.client.learning_component import LearningComponent
 from src.client.settings_component import SettingsComponent
+from settings import SETTINGS
 
 
 def main(page: flet.Page) -> None:

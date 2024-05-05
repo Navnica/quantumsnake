@@ -1,6 +1,8 @@
 import flet
 import requests
 import asyncio
+
+import settings
 from settings import SETTINGS
 
 
@@ -13,11 +15,12 @@ class AuthComponent(flet.SafeArea):
             color: str = flet.colors.GREEN if not fail else flet.colors.RED
             text: str = 'Успешно' if not fail else 'Не удалось'
 
-            self.content.controls[-1].color = color
-            self.content.controls[-1].value = text
+            self.content.controls[2].color = color
+            self.content.controls[2].value = text
             self.content.controls[0].controls[-1].content = flet.Icon(
                 name=flet.icons.DONE if not fail else flet.icons.PRIORITY_HIGH, color=color)
             self.content.controls[0].controls[0].value = 1
+            self.content.controls[4].visible = True if fail and SETTINGS.DEBUG else False
 
             self.content.controls[0].controls[0].color = color
 
@@ -97,6 +100,52 @@ class AuthComponent(flet.SafeArea):
                 self.update()
                 return
 
+        async def on_connection_setting_click(event: flet.ControlEvent) -> None:
+            def save_settings(event: flet.ControlEvent) -> None:
+                SETTINGS.SERVER_URL = server_address_text_field.value
+                SETTINGS.TOKEN = token_text_field.value
+
+                self.page.dialog.open = False
+                self.page.update()
+
+                self.page.loop.create_task(check_connection())
+
+            server_address_text_field: flet.TextField = flet.TextField(
+                label='Адрес сервера',
+                value=SETTINGS.SERVER_URL,
+                border_radius=10,
+                border_width=2,
+                border_color=flet.colors.PRIMARY,
+            )
+
+            token_text_field: flet.TextField = flet.TextField(
+                label='Токен',
+                value=SETTINGS.TOKEN,
+                border_radius=10,
+                border_width=2,
+                border_color=flet.colors.PRIMARY,
+            )
+
+            self.page.dialog = flet.AlertDialog(
+                open=True,
+                shape=flet.RoundedRectangleBorder(radius=10),
+                content=flet.Column(
+                    height=250,
+                    alignment=flet.MainAxisAlignment.CENTER,
+                    horizontal_alignment=flet.CrossAxisAlignment.CENTER,
+                    controls=[
+                        server_address_text_field,
+                        token_text_field,
+
+                        flet.FilledButton(
+                            text='Сохранить',
+                            on_click=save_settings
+                        )
+
+                    ]
+                )
+            )
+
             login_text_field: flet.TextField = auth_content.controls[0].content.controls[0]
             password_text_field: flet.TextField = auth_content.controls[0].content.controls[1]
             confirm_password_text_field: flet.TextField = auth_content.controls[0].content.controls[2]
@@ -165,7 +214,13 @@ class AuthComponent(flet.SafeArea):
                 ),
 
                 flet.Divider(height=20, color=flet.colors.with_opacity(0, flet.colors.GREEN)),
-                flet.Text(value='Подключение к серверу')
+                flet.Text(value='Подключение к серверу'),
+                flet.Divider(height=20, color=flet.colors.with_opacity(0, flet.colors.GREEN)),
+                flet.FilledButton(
+                    text='Настройки подключения',
+                    visible=False,
+                    on_click=on_connection_setting_click
+                )
 
             ]
         )
