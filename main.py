@@ -1,4 +1,6 @@
 import flet
+
+import settings
 from src.client.auth_component import AuthComponent
 from src.client.tests_component import TestsComponent
 from src.client.database_component import DatabaseComponent
@@ -31,7 +33,7 @@ def main(page: flet.Page) -> None:
 
     def create_pages() -> None:
         page.controls[0].content.controls.clear()
-        page.controls[-1].visible = True
+        page.controls[1].visible = True
 
         page.controls[0].content.controls.extend([
             flet.Container(
