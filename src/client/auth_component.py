@@ -11,12 +11,21 @@ class AuthComponent(flet.SafeArea):
 
     def build(self) -> None:
         def set_session(username: str) -> None:
-            response: requests.Response = requests.get(
-                url=SETTINGS.SERVER_URL + '/user/get_by_username/',
-                params={'token': SETTINGS.TOKEN, 'username': username}
+            response_user: requests.Response = requests.get(
+                url=f'{SETTINGS.SERVER_URL}/user/get_by_username/{username}',
+                params={'token': SETTINGS.TOKEN}
             )
 
-            session: Session = Session(identification=response.json()['identification'], username=username)
+            response_role: requests.Response = requests.get(
+                url=f'{SETTINGS.SERVER_URL}/role/get/{response_user.json()["role_id"]}',
+                params={'token': SETTINGS.TOKEN}
+            )
+
+            session: Session = Session(
+                user=response_user.json(),
+                role=response_role.json()
+            )
+
             self.page.session.set('session', session)
             self.page.session.set('auth', True)
             self.opacity = 0
@@ -33,15 +42,6 @@ class AuthComponent(flet.SafeArea):
             self.content.controls[4].visible = True if fail and SETTINGS.DEBUG else False
 
             self.content.controls[0].controls[0].color = color
-
-        def end_animate(event: flet.ControlEvent) -> None:
-            if self.page.session.get('auth'):
-                self.page.session.get('create_pages')()
-                return
-
-            self.content = auth_content
-            self.opacity = 1
-            self.update()
 
         async def check_connection():
             await asyncio.sleep(3)
@@ -65,6 +65,15 @@ class AuthComponent(flet.SafeArea):
         async def start_animation() -> None:
             await asyncio.sleep(1)
             self.opacity = 0
+            self.update()
+
+        def end_animation(event: flet.ControlEvent) -> None:
+            if self.page.session.get('auth'):
+                self.page.session.get('create_pages')()
+                return
+
+            self.content = auth_content
+            self.opacity = 1
             self.update()
 
         async def on_login_click(event: flet.ControlEvent) -> None:
@@ -197,7 +206,7 @@ class AuthComponent(flet.SafeArea):
             self.page.update()
 
         self.animate_opacity = flet.Animation(duration=200)
-        self.on_animation_end = end_animate
+        self.on_animation_end = end_animation
 
         start_content: flet.Column = flet.Column(
             alignment=flet.MainAxisAlignment.CENTER,

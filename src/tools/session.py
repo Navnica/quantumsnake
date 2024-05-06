@@ -1,7 +1,15 @@
 class Session:
-    identification: int
-    username: str
+    def __init__(self, user: dict, role: dict) -> None:
+        self.User.username = user['username']
+        self.User.identification = user['identification']
 
-    def __init__(self, identification: int, username: str) -> None:
-        self.identification = identification
-        self.username = username
+        self.Role.name = role['name']
+        self.Role.power_level = role['power_level']
+
+    class User:
+        username: str
+        identification: int
+
+    class Role:
+        name: str
+        power_level: int

@@ -1,4 +1,5 @@
 import flet
+from src.client.test_create_fragment import TestCreateFragment
 
 
 class TestTile(flet.Container):
@@ -28,66 +29,69 @@ class TestTile(flet.Container):
 
 
 class TestsComponent(flet.SafeArea):
+    def __init__(self):
+        super().__init__()
+
     def reload(self) -> None:
         pass
 
+    def switch_container(self, container: flet.Container) -> None:
+        for c in self.content.controls:
+            c.visible = c == container
+
+        self.page.update()
+
+    def on_new_test_click(self, event: flet.ControlEvent) -> None:
+        self.switch_container(self.content.controls[1])
+
     def build(self) -> None:
         self.content = flet.Column(
-            horizontal_alignment=flet.CrossAxisAlignment.CENTER,
-            alignment=flet.MainAxisAlignment.SPACE_BETWEEN,
             controls=[
-                flet.Stack(
-                    width=150,
-                    height=150,
-                    controls=[
-                        flet.ProgressRing(
-                            value=1 / 4,
-                            bgcolor=flet.colors.SURFACE_VARIANT,
-                            width=150,
-                            height=150,
-                        ),
-                        flet.Container(
-                            alignment=flet.alignment.center,
-                            content=flet.Column(
-                                alignment=flet.MainAxisAlignment.CENTER,
-                                horizontal_alignment=flet.CrossAxisAlignment.CENTER,
+                flet.Container(
+                    visible=True,
+                    expand=True,
+                    content=flet.Column(
+                        horizontal_alignment=flet.CrossAxisAlignment.CENTER,
+                        alignment=flet.MainAxisAlignment.SPACE_BETWEEN,
+                        controls=[
+                            flet.Stack(
+                                width=150,
+                                height=150,
                                 controls=[
-                                    flet.Text("Тестов пройдено", weight=flet.FontWeight.BOLD),
-                                    flet.Text("1/4")
+                                    flet.ProgressRing(
+                                        value=0,
+                                        bgcolor=flet.colors.SURFACE_VARIANT,
+                                        width=150,
+                                        height=150,
+                                    ),
+                                    flet.Container(
+                                        alignment=flet.alignment.center,
+                                        content=flet.Column(
+                                            alignment=flet.MainAxisAlignment.CENTER,
+                                            horizontal_alignment=flet.CrossAxisAlignment.CENTER,
+                                            controls=[
+                                                flet.Text("Тестов пройдено", weight=flet.FontWeight.BOLD),
+                                                flet.Text("0/4")
+                                            ]
+                                        ),
+                                    )
                                 ]
                             ),
-                        )
-                    ]
+                            flet.FilledButton(
+                                text='Новый тест',
+                                visible=self.page.session.get('session').Role.power_level > 1,
+                                on_click=self.on_new_test_click
+                            ),
+                            flet.Divider(height=10),
+
+                        ]
+                    )
                 ),
-                flet.Divider(height=10),
-                flet.Row(
-                    alignment=flet.MainAxisAlignment.SPACE_EVENLY,
-                    controls=[
-                        TestTile(
-                            icon_name=flet.icons.EMOJI_EMOTIONS,
-                            button_text='Эмоции'
-                        ),
-
-                        TestTile(
-                            icon_name=flet.icons.QUESTION_ANSWER,
-                            button_text='Ответы'
-                        )
-                    ]
-                ),
-
-                flet.Row(
-                    alignment=flet.MainAxisAlignment.SPACE_EVENLY,
-                    controls=[
-                        TestTile(
-                            icon_name=flet.icons.TIMER,
-                            button_text='Времена'
-                        ),
-
-                        TestTile(
-                            icon_name=flet.icons.RECORD_VOICE_OVER,
-                            button_text='Наречия'
-                        )
-                    ]
+                flet.Container(
+                    visible=False,
+                    expand=True,
+                    content=TestCreateFragment(par=self)
                 )
+
             ]
         )
