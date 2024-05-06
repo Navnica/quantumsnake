@@ -1,8 +1,7 @@
 import flet
 import requests
 import asyncio
-
-import settings
+from src.tools.session import Session
 from settings import SETTINGS
 
 
@@ -11,6 +10,17 @@ class AuthComponent(flet.SafeArea):
         pass
 
     def build(self) -> None:
+        def set_session(username: str) -> None:
+            response: requests.Response = requests.get(
+                url=SETTINGS.SERVER_URL + '/user/get_by_username/',
+                params={'token': SETTINGS.TOKEN, 'username': username}
+            )
+
+            session: Session = Session(identification=response.json()['identification'], username=username)
+            self.page.session.set('session', session)
+            self.page.session.set('auth', True)
+            self.opacity = 0
+
         def set_connection_info(fail: bool) -> None:
             color: str = flet.colors.GREEN if not fail else flet.colors.RED
             text: str = 'Успешно' if not fail else 'Не удалось'
@@ -81,9 +91,7 @@ class AuthComponent(flet.SafeArea):
                 match response.status_code:
                     case 200:
                         if response.json():
-                            self.page.session.set('auth', True)
-                            self.page.session.set('username', login_text_field.value)
-                            self.opacity = 0
+                            set_session(login_text_field.value)
 
                         else:
                             login_text_field.error_text = 'Неверное имя пользователя или пароль'
@@ -134,9 +142,7 @@ class AuthComponent(flet.SafeArea):
 
                 match response.status_code:
                     case 200:
-                        self.page.session.set('username', login_text_field.value)
-                        self.page.session.set('auth', True)
-                        self.opacity = 0
+                        set_session(login_text_field.value)
 
                     case 409:
                         login_text_field.error_text = 'Имя пользователя занято'
