@@ -23,7 +23,7 @@ class ABCFragment(flet.Column):
                     height=250,
                     controls=[
                         flet.Video(
-                            playlist=[flet.VideoMedia(resource=event.control.data)],
+                            playlist=[flet.VideoMedia(resource=f'{SETTINGS.SERVER_URL}/video_file/get_file_by_filename/{event.control.data}.mp4')],
                             autoplay=True,
                             show_controls=False,
                             aspect_ratio=3 / 2,
@@ -52,7 +52,7 @@ class ABCFragment(flet.Column):
         letters: list = []
 
         for letter in requests.get(SETTINGS.SERVER_URL + '/video_file/get_all', params={'token': SETTINGS.TOKEN}).json():
-            if not letter['is_word']:
+            if letter['tag'] == 'Letter':
                 letters.append(letter)
 
         letters.sort(key=lambda x: x['name'])
@@ -70,7 +70,7 @@ class ABCFragment(flet.Column):
                         width=60,
                         text=letter['name'].upper(),
                         on_click=show_letter,
-                        data=letter['url'],
+                        data=letter['name'],
                         style=flet.ButtonStyle(
                             shape=flet.RoundedRectangleBorder(radius=8),
                             bgcolor=flet.colors.SURFACE_VARIANT,
