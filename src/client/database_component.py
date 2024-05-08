@@ -70,6 +70,7 @@ class DatabaseComponent(flet.SafeArea):
         )
 
         self.content = flet.Column(
+            horizontal_alignment=flet.CrossAxisAlignment.CENTER,
             scroll=flet.ScrollMode.AUTO,
             controls=[
                 flet.SearchBar(

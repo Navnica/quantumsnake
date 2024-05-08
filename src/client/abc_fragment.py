@@ -11,6 +11,7 @@ class ABCFragment(flet.Column):
 
         def video_replay(event: flet.ControlEvent):
             self.page.dialog.content.controls[0].seek(0)
+            self.page.dialog.content.controls[0].play()
 
         def show_letter(event: flet.ControlEvent, word: bool = False) -> None:
             video_dialog: flet.AlertDialog = flet.AlertDialog(
@@ -20,7 +21,6 @@ class ABCFragment(flet.Column):
                 content=flet.Column(
                     alignment=flet.MainAxisAlignment.START,
                     horizontal_alignment=flet.CrossAxisAlignment.CENTER,
-                    height=250,
                     controls=[
                         flet.Video(
                             playlist=[flet.VideoMedia(resource=f'{SETTINGS.SERVER_URL}/video_file/get_file_by_filename/{event.control.data}.mp4')],
