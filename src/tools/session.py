@@ -5,6 +5,7 @@ class Session:
 
         self.Role.name = role['name']
         self.Role.power_level = role['power_level']
+        self.Role.access_code = role['access_code']
 
     class User:
         username: str
@@ -13,3 +14,4 @@ class Session:
     class Role:
         name: str
         power_level: int
+        access_code: str
