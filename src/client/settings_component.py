@@ -123,8 +123,11 @@ class SettingsComponent(flet.SafeArea):
                             flet.Row(
                                 alignment=flet.MainAxisAlignment.CENTER,
                                 controls=[
-                                    flet.Text(value="Тема приложения", color=flet.colors.PRIMARY,
-                                              weight=flet.FontWeight.BOLD),
+                                    flet.Text(
+                                        value="Тема приложения",
+                                        color=flet.colors.PRIMARY,
+                                        weight=flet.FontWeight.BOLD
+                                    ),
                                     flet.Icon(name=flet.icons.PALETTE)
                                 ]
                             ),
@@ -144,8 +147,12 @@ class SettingsComponent(flet.SafeArea):
                             flet.Row(
                                 alignment=flet.MainAxisAlignment.CENTER,
                                 controls=[
-                                    flet.Text(value='Менеджер ролей'),
-                                    flet.Icon(name=flet.icons.SUPERVISOR_ACCOUNT)
+                                    flet.Text(
+                                        value='Отладка',
+                                        color=flet.colors.PRIMARY,
+                                        weight=flet.FontWeight.BOLD
+                                    ),
+                                    flet.Icon(name=flet.icons.BUG_REPORT)
                                 ]
                             ),
 

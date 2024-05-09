@@ -9,7 +9,7 @@ class ABCFragment(flet.Column):
 
         # Defs
 
-        def video_replay(event: flet.ControlEvent):
+        def video_replay(event: flet.ControlEvent = None) -> None:
             self.page.dialog.content.controls[0].seek(0)
             self.page.dialog.content.controls[0].play()
 
