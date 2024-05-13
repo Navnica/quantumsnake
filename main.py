@@ -15,6 +15,7 @@ def main(page: flet.Page) -> None:
     page.title = "QuantumSnake"
     page.window_height = 650
     page.window_width = 450
+    page.window_center()
     page.vertical_alignment = flet.MainAxisAlignment.END
     page.horizontal_alignment = flet.CrossAxisAlignment.CENTER
 

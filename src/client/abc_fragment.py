@@ -19,7 +19,7 @@ class ABCFragment(flet.Column):
                 open=True,
                 shape=flet.RoundedRectangleBorder(radius=10),
                 content=flet.Column(
-                    alignment=flet.MainAxisAlignment.START,
+                    alignment=flet.MainAxisAlignment.CENTER,
                     horizontal_alignment=flet.CrossAxisAlignment.CENTER,
                     controls=[
                         flet.Video(
