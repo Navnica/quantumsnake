@@ -2,6 +2,134 @@ import asyncio
 import flet
 
 
+class Question(flet.Container):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def on_button_click(self, event: flet.ControlEvent) -> None:
+        pass
+
+    def on_check_box_click(self, event: flet.ControlEvent) -> None:
+        color: str = flet.colors.GREEN_500 if event.control.value else flet.colors.RED_ACCENT
+        self.content.controls[event.control.data + 1].controls[0].style.bgcolor = color
+        self.update()
+
+    def build(self) -> None:
+        self.border = flet.border.all(width=2, color=flet.colors.PRIMARY)
+        self.border_radius = 15
+        self.padding = 10
+        self.alignment = flet.alignment.center
+        self.content = flet.Column(
+            alignment=flet.MainAxisAlignment.START,
+            horizontal_alignment=flet.CrossAxisAlignment.CENTER,
+            controls=[
+                flet.SearchBar(
+                    height=45,
+                    controls=[
+                        flet.Column(
+                            controls=[
+
+                            ]
+                        )
+                    ]
+                ),
+                flet.Row(
+                    alignment=flet.MainAxisAlignment.SPACE_AROUND,
+                    controls=[
+                        flet.FilledButton(
+                            text='Ответ №1',
+                            data=0,
+                            on_click=self.on_button_click,
+                            style=flet.ButtonStyle(
+                                bgcolor=flet.colors.RED_ACCENT,
+                                color=flet.colors.WHITE,
+                                shape=flet.RoundedRectangleBorder(
+                                    radius=15
+                                )
+                            )
+                        ),
+                        flet.Checkbox(
+                            data=0,
+                            label='Верный',
+                            value=False,
+                            on_change=self.on_check_box_click
+                        )
+                    ]
+                ),
+                flet.Row(
+                    alignment=flet.MainAxisAlignment.SPACE_AROUND,
+                    controls=[
+                        flet.FilledButton(
+                            text='Ответ №2',
+                            data=1,
+                            on_click=self.on_button_click,
+                            style=flet.ButtonStyle(
+                                bgcolor=flet.colors.RED_ACCENT,
+                                color=flet.colors.WHITE,
+                                shape=flet.RoundedRectangleBorder(
+                                    radius=15
+                                )
+                            )
+                        ),
+                        flet.Checkbox(
+                            data=1,
+                            label='Верный',
+                            value=False,
+                            on_change=self.on_check_box_click
+                        )
+                    ]
+                ),
+                flet.Row(
+                    alignment=flet.MainAxisAlignment.SPACE_AROUND,
+                    controls=[
+                        flet.FilledButton(
+                            text='Ответ №3',
+                            data=2,
+                            on_click=self.on_button_click,
+                            style=flet.ButtonStyle(
+                                bgcolor=flet.colors.RED_ACCENT,
+                                color=flet.colors.WHITE,
+                                shape=flet.RoundedRectangleBorder(
+                                    radius=15
+                                )
+                            )
+                        ),
+                        flet.Checkbox(
+                            data=2,
+                            label='Верный',
+                            value=False,
+                            on_change=self.on_check_box_click
+                        )
+                    ]
+                ),
+                flet.Row(
+                    alignment=flet.MainAxisAlignment.SPACE_AROUND,
+                    controls=[
+                        flet.FilledButton(
+                            text='Ответ №4',
+                            data=3,
+                            on_click=self.on_button_click,
+                            style=flet.ButtonStyle(
+                                bgcolor=flet.colors.RED_ACCENT,
+                                color=flet.colors.WHITE,
+                                shape=flet.RoundedRectangleBorder(
+                                    radius=15
+                                )
+                            )
+                        ),
+                        flet.Checkbox(
+                            data=3,
+                            label='Верный',
+                            value=False,
+                            on_change=self.on_check_box_click
+                        )
+                    ]
+                ),
+
+            ]
+        )
+
+
 class TestCreateFragment(flet.SafeArea):
     def __init__(self, par: flet.SafeArea) -> None:
         super().__init__()
@@ -85,9 +213,14 @@ class TestCreateFragment(flet.SafeArea):
 
         self.page.update()
 
+    def on_add_question_click(self, event: flet.ControlEvent) -> None:
+        event.control.parent.controls.insert(-2, Question())
+        self.update()
+
     def build(self):
         self.search_bar_content: flet.Column = flet.Column()
         self.content = flet.Column(
+            scroll=flet.ScrollMode.AUTO,
             horizontal_alignment=flet.CrossAxisAlignment.CENTER,
             controls=[
                 flet.Row(
@@ -123,7 +256,6 @@ class TestCreateFragment(flet.SafeArea):
                                 height=0,
                                 width=0,
                                 visible=True,
-                                bar_hint_text="Выбор иконки",
                                 full_screen=True,
                                 controls=[self.search_bar_content],
                                 on_change=self.on_search_bar_change
@@ -137,6 +269,7 @@ class TestCreateFragment(flet.SafeArea):
                     padding=10,
                     alignment=flet.alignment.center,
                     content=flet.Column(
+                        horizontal_alignment=flet.CrossAxisAlignment.CENTER,
                         controls=[
                             flet.Text(value='Настройки теста'),
                             flet.TextField(
@@ -152,6 +285,7 @@ class TestCreateFragment(flet.SafeArea):
                                     flet.TextField(
                                         dense=True,
                                         height=60,
+                                        expand=True,
                                         label='Ролевантность',
                                         border_radius=10,
                                         border_width=2,
@@ -193,6 +327,25 @@ class TestCreateFragment(flet.SafeArea):
                                         on_click=self.show_about_relevance_count,
                                     )
                                 ]
+                            )
+                        ]
+                    )
+                ),
+                flet.Container(
+                    bgcolor=flet.colors.SURFACE_VARIANT,
+                    border_radius=15,
+                    padding=10,
+                    alignment=flet.alignment.center,
+                    content=flet.Column(
+                        horizontal_alignment=flet.CrossAxisAlignment.CENTER,
+                        controls=[
+                            flet.Text(value='Вопросы'),
+                            Question(),
+                            flet.FilledButton(
+                                width=200,
+                                text='Добавить',
+                                icon=flet.icons.ADD,
+                                on_click=self.on_add_question_click
                             )
                         ]
                     )
