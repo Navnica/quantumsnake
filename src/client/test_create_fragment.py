@@ -12,20 +12,24 @@ class Question(flet.Container):
         pass
 
     def on_search_bar_change(self, event: flet.ControlEvent) -> None:
+        def on_question_word_select_click(e: flet.ControlEvent):
+            search_bar.close_view()
+            search_bar.value = e.control.data
+            self.page.update()
+
         search_bar: flet.SearchBar = event.control
-        search_bar.controls.clear()
+        search_bar.controls[0].controls.clear()
 
-        search_bar_content: flet.Column = flet.Column()
-
-        for word in requests.get(SETTINGS.SERVER_URL + '/video_file/get_all', params={'token': SETTINGS.TOKEN}).json():
-            if word['tag'] == 'Word' and search_bar.value in word['name']:
-                search_bar_content.controls.append(
+        for word in self.page.session.get('session').VideoFiles().get_all():
+            if word.name.lower() in search_bar.value.lower():
+                search_bar.controls[0].controls.append(
                     flet.ListTile(
-                        title=flet.Text(word['name'])
+                        title=flet.Text(word.name),
+                        data=word.name, 
+                        on_click=on_question_word_select_click
                     )
                 )
 
-        search_bar.controls.append(search_bar_content)
         search_bar.update()
 
     def on_check_box_click(self, event: flet.ControlEvent) -> None:
@@ -45,11 +49,10 @@ class Question(flet.Container):
                 flet.SearchBar(
                     height=45,
                     on_change=self.on_search_bar_change,
+                    full_screen=True,
                     controls=[
                         flet.Column(
-                            controls=[
 
-                            ]
                         )
                     ]
                 ),
