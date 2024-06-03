@@ -1,6 +1,5 @@
 import flet
 from settings import SETTINGS
-import requests
 
 
 class ABCFragment(flet.Column):
@@ -51,11 +50,11 @@ class ABCFragment(flet.Column):
 
         letters: list = []
 
-        for letter in requests.get(SETTINGS.SERVER_URL + '/video_file/get_all', params={'token': SETTINGS.TOKEN}).json():
-            if letter['tag'] == 'Letter':
+        for letter in self.page.session.get('session').VideoFiles().get_all():
+            if letter.tag == 'Letter':
                 letters.append(letter)
 
-        letters.sort(key=lambda x: x['name'])
+        letters.sort(key=lambda x: x.name)
         letters.insert(6, letters[-1])
         letters = letters[:-1]
 
@@ -68,9 +67,9 @@ class ABCFragment(flet.Column):
                     width=63,
                     content=flet.FilledButton(
                         width=60,
-                        text=letter['name'].upper(),
+                        text=letter.name.upper(),
                         on_click=show_letter,
-                        data=letter['name'],
+                        data=letter.name,
                         style=flet.ButtonStyle(
                             shape=flet.RoundedRectangleBorder(radius=8),
                             bgcolor=flet.colors.SURFACE_VARIANT,

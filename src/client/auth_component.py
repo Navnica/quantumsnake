@@ -21,9 +21,21 @@ class AuthComponent(flet.SafeArea):
                 params={'token': SETTINGS.TOKEN}
             )
 
+            files: list = []
+
+            for file in requests.get(
+                    url=f'{SETTINGS.SERVER_URL}/video_file/get_all',
+                    params={'token': SETTINGS.TOKEN}
+            ).json():
+                files.append(Session.VideoFiles.VideoFile(
+                    name=file['name'],
+                    tag=file['tag']
+                ))
+
             session: Session = Session(
                 user=response_user.json(),
-                role=response_role.json()
+                role=response_role.json(),
+                video_files=files
             )
 
             self.page.session.set('session', session)

@@ -1,5 +1,7 @@
 import asyncio
 import flet
+import requests
+from settings import SETTINGS
 
 
 class Question(flet.Container):
@@ -8,6 +10,23 @@ class Question(flet.Container):
 
     def on_button_click(self, event: flet.ControlEvent) -> None:
         pass
+
+    def on_search_bar_change(self, event: flet.ControlEvent) -> None:
+        search_bar: flet.SearchBar = event.control
+        search_bar.controls.clear()
+
+        search_bar_content: flet.Column = flet.Column()
+
+        for word in requests.get(SETTINGS.SERVER_URL + '/video_file/get_all', params={'token': SETTINGS.TOKEN}).json():
+            if word['tag'] == 'Word' and search_bar.value in word['name']:
+                search_bar_content.controls.append(
+                    flet.ListTile(
+                        title=flet.Text(word['name'])
+                    )
+                )
+
+        search_bar.controls.append(search_bar_content)
+        search_bar.update()
 
     def on_check_box_click(self, event: flet.ControlEvent) -> None:
         color: str = flet.colors.GREEN_500 if event.control.value else flet.colors.RED_ACCENT
@@ -25,6 +44,7 @@ class Question(flet.Container):
             controls=[
                 flet.SearchBar(
                     height=45,
+                    on_change=self.on_search_bar_change,
                     controls=[
                         flet.Column(
                             controls=[

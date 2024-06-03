@@ -1,6 +1,4 @@
 import flet
-import requests
-from settings import SETTINGS
 
 
 class DatabaseComponent(flet.SafeArea):
@@ -15,15 +13,15 @@ class DatabaseComponent(flet.SafeArea):
 
             if event.data == '':
                 search_bar_content.controls.extend([flet.ListTile(
-                    title=flet.Text(word['name']),
-                    data=word['name'],
+                    title=flet.Text(word.name),
+                    data=word[word.name],
                     on_click=show_word_video) for word in words])
             else:
                 for word in words:
-                    if event.data.lower() in word['name'].lower():
+                    if event.data.lower() in word.name.lower():
                         search_bar_content.controls.append(flet.ListTile(
-                            title=flet.Text(word['name']),
-                            data=word['name'],
+                            title=flet.Text(word.name),
+                            data=word.name,
                             on_click=show_word_video
                         )
                     )
@@ -37,8 +35,8 @@ class DatabaseComponent(flet.SafeArea):
 
         words: list = []
 
-        for word in requests.get(SETTINGS.SERVER_URL + '/video_file/get_all', params={'token': SETTINGS.TOKEN}).json():
-            if word['tag'] == 'Word':
+        for word in self.page.session.get('session').VideoFiles().get_all():
+            if word.tag == 'Word':
                 words.append(word)
 
         word_column: flet.Column = flet.Column(alignment=flet.MainAxisAlignment.CENTER)
@@ -47,8 +45,8 @@ class DatabaseComponent(flet.SafeArea):
         for word in words:
             new_row.controls.append(
                 flet.FilledButton(
-                    text=word['name'],
-                    data=word['name'],
+                    text=word.name,
+                    data=word.name,
                     on_click=show_word_video,
                     style=flet.ButtonStyle(
                         shape=flet.RoundedRectangleBorder(radius=10),
@@ -66,7 +64,7 @@ class DatabaseComponent(flet.SafeArea):
 
         search_bar_content: flet.Column = flet.Column()
         search_bar_content.controls.extend(
-            [flet.ListTile(title=flet.Text(word['name']), data=word['name'], on_click=show_word_video) for word in words]
+            [flet.ListTile(title=flet.Text(word.name), data=word.name, on_click=show_word_video) for word in words]
         )
 
         self.content = flet.Column(
