@@ -41,8 +41,13 @@ class TestsComponent(flet.SafeArea):
 
         self.page.update()
 
-    def on_new_test_click(self, event: flet.ControlEvent) -> None:
+    def on_new_test_click(self, event: flet.ControlEvent = None) -> None:
+        self.content.controls[1].content = TestCreateFragment(par=self)
         self.switch_container(self.content.controls[1])
+
+    def destroy_create_page(self, event: flet.ControlEvent = None) -> None:
+        self.content.controls[1].content = None
+        self.update()
 
     def build(self) -> None:
         self.content = flet.Column(
@@ -90,7 +95,7 @@ class TestsComponent(flet.SafeArea):
                 flet.Container(
                     visible=False,
                     expand=True,
-                    content=TestCreateFragment(par=self)
+                    content=None
                 )
 
             ]

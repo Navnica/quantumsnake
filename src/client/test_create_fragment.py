@@ -1,19 +1,24 @@
-import asyncio
 import flet
-import requests
-from settings import SETTINGS
+from random import choice
+import asyncio
 
 
 class Question(flet.Container):
+    video_file_name: str = None
+
     def __init__(self) -> None:
         super().__init__()
 
-    def on_button_click(self, event: flet.ControlEvent) -> None:
-        pass
-
     def on_search_bar_change(self, event: flet.ControlEvent) -> None:
-        def on_question_word_select_click(e: flet.ControlEvent):
+        async def on_question_word_select_click(e: flet.ControlEvent):
             search_bar.close_view()
+            self.content.controls[1].controls[0].value = e.control.data
+            self.content.controls[1].controls[0].focus()
+            self.page.update()
+
+            self.video_file_name = e.control.data
+
+            await asyncio.sleep(0.1)
             search_bar.value = e.control.data
             self.page.update()
 
@@ -25,16 +30,27 @@ class Question(flet.Container):
                 search_bar.controls[0].controls.append(
                     flet.ListTile(
                         title=flet.Text(word.name),
-                        data=word.name, 
+                        data=word.name,
                         on_click=on_question_word_select_click
                     )
                 )
 
         search_bar.update()
 
-    def on_check_box_click(self, event: flet.ControlEvent) -> None:
+    def on_correct_check_box_click(self, event: flet.ControlEvent) -> None:
         color: str = flet.colors.GREEN_500 if event.control.value else flet.colors.RED_ACCENT
-        self.content.controls[event.control.data + 1].controls[0].style.bgcolor = color
+        event.control.parent.parent.controls[0].border_color = color
+        self.update()
+
+    def on_randomize_check_box_click(self, event: flet.ControlEvent) -> None:
+        event.control.parent.parent.controls[0].read_only = event.control.value
+
+        if event.control.value:
+            event.control.parent.parent.controls[0].value = choice(
+                self.page.session.get('session').VideoFiles().get_all()).name
+        else:
+            event.control.parent.parent.controls[0].value = ''
+
         self.update()
 
     def build(self) -> None:
@@ -57,98 +73,136 @@ class Question(flet.Container):
                     ]
                 ),
                 flet.Row(
-                    alignment=flet.MainAxisAlignment.SPACE_AROUND,
+                    alignment=flet.MainAxisAlignment.SPACE_BETWEEN,
                     controls=[
-                        flet.FilledButton(
-                            text='Ответ №1',
-                            data=0,
-                            on_click=self.on_button_click,
-                            style=flet.ButtonStyle(
-                                bgcolor=flet.colors.RED_ACCENT,
-                                color=flet.colors.WHITE,
-                                shape=flet.RoundedRectangleBorder(
-                                    radius=15
-                                )
-                            )
+                        flet.TextField(
+                            label='Ответ №1',
+                            border_radius=10,
+                            border_width=2,
+                            border_color=flet.colors.GREEN_ACCENT,
+                            width=200,
+                            height=50,
+                            dense=True,
+                            read_only=False
                         ),
-                        flet.Checkbox(
-                            data=0,
-                            label='Верный',
-                            value=False,
-                            on_change=self.on_check_box_click
-                        )
-                    ]
-                ),
-                flet.Row(
-                    alignment=flet.MainAxisAlignment.SPACE_AROUND,
-                    controls=[
-                        flet.FilledButton(
-                            text='Ответ №2',
-                            data=1,
-                            on_click=self.on_button_click,
-                            style=flet.ButtonStyle(
-                                bgcolor=flet.colors.RED_ACCENT,
-                                color=flet.colors.WHITE,
-                                shape=flet.RoundedRectangleBorder(
-                                    radius=15
+                        flet.Column(
+                            alignment=flet.MainAxisAlignment.CENTER,
+                            controls=[
+                                flet.Checkbox(
+                                    label='Верный',
+                                    value=True,
+                                    on_change=self.on_correct_check_box_click
+                                ),
+                                flet.Checkbox(
+                                    label='Случайный',
+                                    value=False,
+                                    on_change=self.on_randomize_check_box_click
                                 )
-                            )
-                        ),
-                        flet.Checkbox(
-                            data=1,
-                            label='Верный',
-                            value=False,
-                            on_change=self.on_check_box_click
+                            ]
                         )
-                    ]
-                ),
-                flet.Row(
-                    alignment=flet.MainAxisAlignment.SPACE_AROUND,
-                    controls=[
-                        flet.FilledButton(
-                            text='Ответ №3',
-                            data=2,
-                            on_click=self.on_button_click,
-                            style=flet.ButtonStyle(
-                                bgcolor=flet.colors.RED_ACCENT,
-                                color=flet.colors.WHITE,
-                                shape=flet.RoundedRectangleBorder(
-                                    radius=15
-                                )
-                            )
-                        ),
-                        flet.Checkbox(
-                            data=2,
-                            label='Верный',
-                            value=False,
-                            on_change=self.on_check_box_click
-                        )
-                    ]
-                ),
-                flet.Row(
-                    alignment=flet.MainAxisAlignment.SPACE_AROUND,
-                    controls=[
-                        flet.FilledButton(
-                            text='Ответ №4',
-                            data=3,
-                            on_click=self.on_button_click,
-                            style=flet.ButtonStyle(
-                                bgcolor=flet.colors.RED_ACCENT,
-                                color=flet.colors.WHITE,
-                                shape=flet.RoundedRectangleBorder(
-                                    radius=15
-                                )
-                            )
-                        ),
-                        flet.Checkbox(
-                            data=3,
-                            label='Верный',
-                            value=False,
-                            on_change=self.on_check_box_click
-                        )
-                    ]
-                ),
 
+                    ]
+                ),
+                flet.Divider(height=5, color=flet.colors.SURFACE_TINT),
+                flet.Row(
+                    alignment=flet.MainAxisAlignment.SPACE_BETWEEN,
+                    controls=[
+                        flet.TextField(
+                            label='Ответ №2',
+                            border_radius=10,
+                            border_width=2,
+                            border_color=flet.colors.RED_ACCENT,
+                            width=200,
+                            height=50,
+                            dense=True,
+                            read_only=True,
+                            value=choice(self.page.session.get('session').VideoFiles().get_all()).name
+                        ),
+                        flet.Column(
+                            alignment=flet.MainAxisAlignment.CENTER,
+                            controls=[
+                                flet.Checkbox(
+                                    label='Верный',
+                                    value=False,
+                                    on_change=self.on_correct_check_box_click
+                                ),
+                                flet.Checkbox(
+                                    label='Случайный',
+                                    value=True,
+                                    on_change=self.on_randomize_check_box_click
+                                )
+                            ]
+                        )
+
+                    ]
+                ),
+                flet.Divider(height=5, color=flet.colors.SURFACE_TINT),
+                flet.Row(
+                    alignment=flet.MainAxisAlignment.SPACE_BETWEEN,
+                    controls=[
+                        flet.TextField(
+                            label='Ответ №3',
+                            border_radius=10,
+                            border_width=2,
+                            border_color=flet.colors.RED_ACCENT,
+                            width=200,
+                            height=50,
+                            dense=True,
+                            read_only=True,
+                            value=choice(self.page.session.get('session').VideoFiles().get_all()).name
+                        ),
+                        flet.Column(
+                            alignment=flet.MainAxisAlignment.CENTER,
+                            controls=[
+                                flet.Checkbox(
+                                    label='Верный',
+                                    value=False,
+                                    on_change=self.on_correct_check_box_click
+                                ),
+                                flet.Checkbox(
+                                    label='Случайный',
+                                    value=True,
+                                    on_change=self.on_randomize_check_box_click
+                                )
+                            ]
+                        )
+
+                    ]
+                ),
+                flet.Divider(height=5, color=flet.colors.SURFACE_TINT),
+                flet.Row(
+                    alignment=flet.MainAxisAlignment.SPACE_BETWEEN,
+                    controls=[
+                        flet.TextField(
+                            label='Ответ №4',
+                            border_radius=10,
+                            border_width=2,
+                            border_color=flet.colors.RED_ACCENT,
+                            width=200,
+                            height=50,
+                            dense=True,
+                            read_only=True,
+                            value=choice(self.page.session.get('session').VideoFiles().get_all()).name
+                        ),
+                        flet.Column(
+                            alignment=flet.MainAxisAlignment.CENTER,
+                            controls=[
+                                flet.Checkbox(
+                                    label='Верный',
+                                    value=False,
+                                    on_change=self.on_correct_check_box_click
+                                ),
+                                flet.Checkbox(
+                                    label='Случайный',
+                                    value=True,
+                                    on_change=self.on_randomize_check_box_click
+                                )
+                            ]
+                        )
+
+                    ]
+                ),
+                flet.Divider(height=5, color=flet.colors.SURFACE_TINT),
             ]
         )
 
@@ -166,10 +220,12 @@ class TestCreateFragment(flet.SafeArea):
         async def on_select_icon(event: flet.ControlEvent) -> None:
             self.content.controls[1].content.controls[1].icon = event.control.data
             self.content.controls[1].content.controls[2].close_view()
-            self.search_bar_content.controls.clear()
+            search_bar_content.controls.clear()
             await self.update_async()
 
-        self.search_bar_content.controls.clear()
+        search_bar_content = event.control.controls[0]
+
+        search_bar_content.controls.clear()
 
         similar_strings: list = []
 
@@ -179,7 +235,7 @@ class TestCreateFragment(flet.SafeArea):
                     continue
 
                 similar_strings.append(icon)
-                self.search_bar_content.controls.append(
+                search_bar_content.controls.append(
                     flet.ListTile(
                         title=flet.Text(
                             value=icon
@@ -237,21 +293,63 @@ class TestCreateFragment(flet.SafeArea):
         self.page.update()
 
     def on_add_question_click(self, event: flet.ControlEvent) -> None:
-        event.control.parent.controls.insert(-2, Question())
+        event.control.parent.controls.insert(-1, Question())
         self.update()
 
+    def on_drop_button_click(self, event: flet.ControlEvent) -> None:
+        self.par.destroy_create_page()
+        self.par.on_new_test_click()
+
+    def on_save_click(self, event: flet.ControlEvent) -> None:
+        name: str = self.content.controls[2].content.controls[1].value
+        icon: str = self.content.controls[1].content.controls[1].icon
+
+        questions: list[Question] = []
+        normalised_questions: list[
+            dict[
+                str, dict
+            ]
+        ]
+
+        for question in self.content.controls[3].content.controls:
+            if type(question) is Question:
+                questions.append(question)
+
+        for question in questions:
+            correct_answers: list[str] = []
+            incorrect_answers: list[str] = []
+            video_file: str = question.video_file_name
+
+            for q in question.content.controls:
+                if type(q) is flet.Row:
+                    if q.controls[0].border_color == flet.colors.GREEN_ACCENT:
+                        correct_answers.append(q.controls[0].value)
+
+                    else:
+                        incorrect_answers.append(q.controls[0].value)
+
     def build(self):
-        self.search_bar_content: flet.Column = flet.Column()
         self.content = flet.Column(
             scroll=flet.ScrollMode.AUTO,
             horizontal_alignment=flet.CrossAxisAlignment.CENTER,
             controls=[
                 flet.Row(
-                    alignment=flet.MainAxisAlignment.START,
+                    alignment=flet.MainAxisAlignment.SPACE_BETWEEN,
                     controls=[
-                        flet.IconButton(
+                        flet.TextButton(
+                            text='Назад',
                             icon=flet.icons.ARROW_BACK,
                             on_click=lambda _: self.par.switch_container(self.par.content.controls[0])
+                        ),
+                        flet.TextButton(
+                            text='Сохранить',
+                            icon=flet.icons.SAVE,
+                            on_click=self.on_save_click
+                        ),
+                        flet.TextButton(
+                            text='Сбросить',
+                            icon=flet.icons.AUTORENEW,
+                            on_click=self.on_drop_button_click
                         )
                     ]
                 ),
@@ -265,7 +363,7 @@ class TestCreateFragment(flet.SafeArea):
                         controls=[
                             flet.Text('Иконка теста'),
                             flet.IconButton(
-                                icon=flet.icons.EMOJI_EMOTIONS,
+                                icon='EMOJI_EMOTIONS',
                                 icon_size=80,
                                 on_click=self.show_icon_select_panel,
                                 style=flet.ButtonStyle(
@@ -280,7 +378,7 @@ class TestCreateFragment(flet.SafeArea):
                                 width=0,
                                 visible=True,
                                 full_screen=True,
-                                controls=[self.search_bar_content],
+                                controls=[flet.Column()],
                                 on_change=self.on_search_bar_change
                             ),
                         ]
