@@ -1,6 +1,9 @@
 import flet
 from random import choice
 import asyncio
+import requests
+from settings import SETTINGS
+import json
 
 
 class Question(flet.Container):
@@ -63,6 +66,7 @@ class Question(flet.Container):
             horizontal_alignment=flet.CrossAxisAlignment.CENTER,
             controls=[
                 flet.SearchBar(
+                    view_leading=flet.Container(),
                     height=45,
                     on_change=self.on_search_bar_change,
                     full_screen=True,
@@ -302,31 +306,71 @@ class TestCreateFragment(flet.SafeArea):
 
     def on_save_click(self, event: flet.ControlEvent) -> None:
         name: str = self.content.controls[2].content.controls[1].value
-        icon: str = self.content.controls[1].content.controls[1].icon
+        icon_name: str = self.content.controls[1].content.controls[1].icon
+        relevance: int = int(self.content.controls[2].content.controls[3].controls[0].value)
 
-        questions: list[Question] = []
-        normalised_questions: list[
-            dict[
-                str, dict
-            ]
-        ]
+        new_test: dict = requests.post(
+            url=f'{SETTINGS.SERVER_URL}/test/create',
+            json={
+                'name': name,
+                'icon_name': icon_name,
+                'relevance': relevance
+            },
+            params={
+                'token': SETTINGS.TOKEN
+            }
+        ).json()
 
         for question in self.content.controls[3].content.controls:
+            def on_ok_click():
+                self.page.dialog.open = False
+                self.page.update()
+                self.par.destroy_create_page()
+
             if type(question) is Question:
-                questions.append(question)
+                correct_answers: list[str] = []
+                incorrect_answers: list[str] = []
+                video_file: str = question.video_file_name
 
-        for question in questions:
-            correct_answers: list[str] = []
-            incorrect_answers: list[str] = []
-            video_file: str = question.video_file_name
+                for q in question.content.controls:
+                    if type(q) is flet.Row:
+                        if q.controls[0].border_color == flet.colors.GREEN_ACCENT:
+                            correct_answers.append(q.controls[0].value)
+                        else:
+                            incorrect_answers.append(q.controls[0].value)
 
-            for q in question.content.controls:
-                if type(q) is flet.Row:
-                    if q.controls[0].border_color == flet.colors.GREEN_ACCENT:
-                        correct_answers.append(q.controls[0].value)
+                requests.post(
+                    url=f'{SETTINGS.SERVER_URL}/test_question/create',
+                    json={
+                        'test': new_test['id'],
+                        'video_file': requests.get(f'{SETTINGS.SERVER_URL}/video_file/get_by_name/{video_file}').json()['id'],
+                        'correct_answers': json.dumps(correct_answers),
+                        'incorrect_answers': json.dumps(incorrect_answers),
+                    },
+                    params={
+                        'token': SETTINGS.TOKEN
+                    }
+                )
 
-                    else:
-                        incorrect_answers.append(q.controls[0].value)
+        self.page.dialog = flet.AlertDialog(
+            open=True,
+            actions=[
+                flet.FilledButton(
+                    text='Ок',
+                    icon=flet.icons.DONE,
+                    on_click=lambda _: on_ok_click()
+                )
+            ],
+            content=flet.Column(
+                alignment=flet.MainAxisAlignment.CENTER,
+                horizontal_alignment=flet.CrossAxisAlignment.CENTER,
+                controls=[
+                    flet.Text('Тест создан')
+                ]
+            )
+        )
+
+        self.page.update()
 
     def build(self):
         self.content = flet.Column(

@@ -47,6 +47,7 @@ class TestsComponent(flet.SafeArea):
 
     def destroy_create_page(self, event: flet.ControlEvent = None) -> None:
         self.content.controls[1].content = None
+        self.switch_container(self.content.controls[0])
         self.update()
 
     def build(self) -> None:
