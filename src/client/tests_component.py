@@ -1,5 +1,8 @@
 import flet
 from src.client.test_create_fragment import TestCreateFragment
+import requests
+from settings import SETTINGS as settings
+from asyncio import sleep as asleep
 
 
 class TestTile(flet.Container):
@@ -50,12 +53,55 @@ class TestsComponent(flet.SafeArea):
         self.switch_container(self.content.controls[0])
         self.update()
 
+    async def get_tests(self):
+        self.content.controls[0].content.controls[4].controls.extend([
+            flet.Container(
+                border_radius=10,
+                padding=20,
+                bgcolor=flet.colors.SURFACE_VARIANT,
+                content=flet.Column(
+                    horizontal_alignment=flet.CrossAxisAlignment.CENTER,
+                    controls=[
+                        flet.IconButton(
+                            icon=test['icon_name'],
+                            icon_size=50,
+                            style=flet.ButtonStyle(
+                                shape=flet.RoundedRectangleBorder(
+                                    radius=10
+                                )
+                            )
+                        ),
+                        flet.Text(
+                            value=test['name']
+                        )
+                    ]
+                )
+            )
+            for test in sorted(
+                requests.get(
+                    url=f'{settings.SERVER_URL}/test/get_all',
+                    params={
+                        'token': settings.TOKEN,
+                    }
+                ).json(),
+                key=lambda x: x['relevance']
+            )
+        ])
+        self.content.\
+            controls[0].\
+            content.controls[0].\
+            controls[1].\
+            content.\
+            controls[1].value = '0/' + str(len(self.content.controls[0].content.controls[4].controls))
+
+        self.page.update()
+
     def build(self) -> None:
         self.content = flet.Column(
+            scroll=flet.ScrollMode.AUTO,
             controls=[
                 flet.Container(
                     visible=True,
-                    expand=True,
                     content=flet.Column(
                         horizontal_alignment=flet.CrossAxisAlignment.CENTER,
                         alignment=flet.MainAxisAlignment.SPACE_BETWEEN,
@@ -83,21 +129,21 @@ class TestsComponent(flet.SafeArea):
                                     )
                                 ]
                             ),
+                            flet.Divider(height=20, color=flet.colors.TRANSPARENT),
                             flet.FilledButton(
                                 text='Новый тест',
                                 visible=self.page.session.get('session').Role.power_level > 1,
                                 on_click=self.on_new_test_click
                             ),
                             flet.Divider(height=10),
-
+                            flet.Column()
                         ]
                     )
                 ),
                 flet.Container(
-                    visible=False,
-                    expand=True,
-                    content=None
-                )
 
+                ),
             ]
         )
+
+        self.page.loop.create_task(self.get_tests())

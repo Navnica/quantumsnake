@@ -225,7 +225,7 @@ class TestCreateFragment(flet.SafeArea):
             self.content.controls[1].content.controls[1].icon = event.control.data
             self.content.controls[1].content.controls[2].close_view()
             search_bar_content.controls.clear()
-            await self.update_async()
+            self.update()
 
         search_bar_content = event.control.controls[0]
 
