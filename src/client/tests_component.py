@@ -3,32 +3,7 @@ from src.client.test_create_fragment import TestCreateFragment
 import requests
 from settings import SETTINGS as settings
 from asyncio import sleep as asleep
-
-
-class TestTile(flet.Container):
-    icon_name: str
-    button_text: str
-    size: int
-
-    def __init__(self, icon_name: str, button_text: str, size: int = 135) -> None:
-        super().__init__()
-
-        self.icon_name = icon_name
-        self.button_text = button_text
-        self.size = size
-
-    def build(self) -> None:
-        self.width = self.size
-        self.height = self.size
-        self.bgcolor = flet.colors.SURFACE_VARIANT
-        self.border_radius = 10
-        self.content = flet.Column(
-            horizontal_alignment=flet.CrossAxisAlignment.CENTER,
-            alignment=flet.MainAxisAlignment.CENTER,
-            controls=[
-                flet.Icon(name=self.icon_name, size=55),
-                flet.FilledButton(text=self.button_text)]
-        )
+from src.client.test_component import Test
 
 
 class TestsComponent(flet.SafeArea):
@@ -54,6 +29,51 @@ class TestsComponent(flet.SafeArea):
         self.update()
 
     async def get_tests(self):
+        def show_load_indicator() -> None:
+            self.page.dialog = flet.AlertDialog(
+                modal=True,
+
+                open=True,
+                content_padding=10,
+                content=flet.Row(
+                    alignment=flet.MainAxisAlignment.CENTER,
+                    vertical_alignment=flet.CrossAxisAlignment.CENTER,
+                    controls=[
+                        flet.ProgressRing(
+                            height=70,
+                            width=70
+                        )
+                    ]
+                )
+            )
+
+            self.page.update()
+
+        def hide_load_indicator() -> None:
+            self.page.dialog.open = False
+            self.page.update()
+
+        def create_test(event: flet.ControlEvent) -> None:
+            async def collect_test_questions() -> None:
+                test_data: dict = requests.get(
+                    url=f'{settings.SERVER_URL}/test_question/get_for_test/{test_id}',
+                    params={
+                        'token': settings.TOKEN
+                    }
+                ).json()
+
+                await asleep(0.5)
+                hide_load_indicator()
+                self.page.controls[1].visible = False
+                self.content.controls[1].content = Test(
+                    test_data=test_data
+                )
+                self.switch_container(self.content.controls[1])
+
+            test_id: int = event.control.data
+            show_load_indicator()
+            self.page.loop.create_task(collect_test_questions())
+
         self.content.controls[0].content.controls[4].controls.extend([
             flet.Container(
                 border_radius=10,
@@ -65,6 +85,8 @@ class TestsComponent(flet.SafeArea):
                         flet.IconButton(
                             icon=test['icon_name'],
                             icon_size=50,
+                            data=int(test['id']),
+                            on_click=create_test,
                             style=flet.ButtonStyle(
                                 shape=flet.RoundedRectangleBorder(
                                     radius=10
@@ -87,11 +109,11 @@ class TestsComponent(flet.SafeArea):
                 key=lambda x: x['relevance']
             )
         ])
-        self.content.\
-            controls[0].\
-            content.controls[0].\
-            controls[1].\
-            content.\
+        self.content. \
+            controls[0]. \
+            content.controls[0]. \
+            controls[1]. \
+            content. \
             controls[1].value = '0/' + str(len(self.content.controls[0].content.controls[4].controls))
 
         self.page.update()
