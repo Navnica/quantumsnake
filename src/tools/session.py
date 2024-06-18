@@ -2,6 +2,7 @@ class Session:
     def __init__(self, user: dict, role: dict, video_files: list) -> None:
         self.User.username = user['username']
         self.User.identification = user['identification']
+        self.User.user_id = user['id']
 
         self.Role.name = role['name']
         self.Role.power_level = role['power_level']
@@ -10,6 +11,7 @@ class Session:
         self.VideoFiles.files = video_files
 
     class User:
+        user_id: int
         username: str
         identification: int
 

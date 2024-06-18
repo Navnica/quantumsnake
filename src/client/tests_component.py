@@ -24,9 +24,8 @@ class TestsComponent(flet.SafeArea):
         self.switch_container(self.content.controls[1])
 
     def destroy_create_page(self, event: flet.ControlEvent = None) -> None:
-        self.content.controls[1].content = None
-        self.switch_container(self.content.controls[0])
-        self.update()
+        self.build()
+        self.page.update()
 
     async def get_tests(self):
         def show_load_indicator() -> None:
@@ -55,7 +54,7 @@ class TestsComponent(flet.SafeArea):
 
         def create_test(event: flet.ControlEvent) -> None:
             async def collect_test_questions() -> None:
-                test_data: dict = requests.get(
+                test_data: list = requests.get(
                     url=f'{settings.SERVER_URL}/test_question/get_for_test/{test_id}',
                     params={
                         'token': settings.TOKEN
@@ -66,7 +65,8 @@ class TestsComponent(flet.SafeArea):
                 hide_load_indicator()
                 self.page.controls[1].visible = False
                 self.content.controls[1].content = Test(
-                    test_data=test_data
+                    test_data=test_data,
+                    test_id=test_id
                 )
                 self.switch_container(self.content.controls[1])
 
@@ -78,7 +78,12 @@ class TestsComponent(flet.SafeArea):
             flet.Container(
                 border_radius=10,
                 padding=20,
-                bgcolor=flet.colors.SURFACE_VARIANT,
+                bgcolor=flet.colors.SURFACE_VARIANT if requests.get(
+                    url=f'{settings.SERVER_URL}/finished_test/finished_for_user/{self.page.session.get("session").User.user_id}/{test["id"]}',
+                    params={
+                        'token': settings.TOKEN
+                    }
+                ).json() == False else '#228B22',
                 content=flet.Column(
                     horizontal_alignment=flet.CrossAxisAlignment.CENTER,
                     controls=[
@@ -109,12 +114,32 @@ class TestsComponent(flet.SafeArea):
                 key=lambda x: x['relevance']
             )
         ])
+
+        test_finished: int = len(
+            requests.get(
+                url=f'{settings.SERVER_URL}/finished_test/get_for_user/{self.page.session.get("session").User.user_id}',
+                params={
+                    'token': settings.TOKEN
+                }
+            ).json()
+        )
+
         self.content. \
             controls[0]. \
             content.controls[0]. \
             controls[1]. \
             content. \
-            controls[1].value = '0/' + str(len(self.content.controls[0].content.controls[4].controls))
+            controls[1].value = str(test_finished) + '/' + str(
+            len(self.content.controls[0].content.controls[4].controls))
+
+        try:
+            self.content. \
+                controls[0]. \
+                content.controls[0]. \
+                controls[0].value = test_finished / len(self.content.controls[0].content.controls[4].controls)
+
+        except ZeroDivisionError:
+            pass
 
         self.page.update()
 
@@ -162,9 +187,7 @@ class TestsComponent(flet.SafeArea):
                         ]
                     )
                 ),
-                flet.Container(
-
-                ),
+                flet.Container(),
             ]
         )
 

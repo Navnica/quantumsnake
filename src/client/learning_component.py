@@ -63,6 +63,7 @@ class LearningComponent(flet.Column):
                             ),
                             flet.IconButton(
                                 icon=flet.icons.MENU_BOOK,
+                                visible=False,
                                 icon_size=40,
                                 on_click=lambda event: open_fragment(event, 1),
                                 style=flet.ButtonStyle(
@@ -78,6 +79,7 @@ class LearningComponent(flet.Column):
                             flet.IconButton(
                                 icon=flet.icons.ASSIGNMENT_RETURNED,
                                 icon_size=40,
+                                visible=False,
                                 on_click=lambda event: open_fragment(event, 2),
                                 style=flet.ButtonStyle(
                                     shape=flet.RoundedRectangleBorder(radius=10),
