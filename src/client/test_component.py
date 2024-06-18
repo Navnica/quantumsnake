@@ -110,33 +110,28 @@ class Question(flet.SafeArea):
 
 
 class Test(flet.SafeArea):
-    questions: flet.Column = flet.Column()
-    correct_answers: int = 0
-    incorrect_answers: int = 0
-
     def __init__(self, test_data: list, test_id: int) -> None:
         super().__init__()
         self.test_datas = test_data
         self.test_id = test_id
+        self.correct_answers = 0
+        self.incorrect_answers = 0
 
-    def on_test_finish_click(self, event: flet.ControlEvent) -> None:
+    def on_test_finish_click(self) -> None:
         self.page.controls[1].visible = True
-        self.parent.parent.parent.destroy_create_page()
+        self.parent.parent.destroy_create_page()
 
     def switch_question(self, question_id: int) -> None:
-        test_ended: bool = False
-        ni: int = 0
-
+        test_ended = False
         self.questions.controls.clear()
-        for test_data in self.test_datas:
+
+        for ni, test_data in enumerate(self.test_datas):
             self.questions.controls.append(
                 Question(
                     test_data=test_data,
                     self_id=ni
                 )
             )
-
-            ni += 1
 
         self.update()
         for question in self.questions.controls:
@@ -145,73 +140,52 @@ class Test(flet.SafeArea):
 
             self.progress_bar.value = question_id / len(self.test_datas)
 
-            if question_id == len(self.content.controls[0].content.controls):
+            if question_id == len(self.questions.controls):
                 test_ended = True
 
         if test_ended:
             self.content.controls = [
-                flet.Text(
-                    value=f'Тест{" " if self.incorrect_answers == 0 else " не "}завершен'
-                ),
+                flet.Text(value=f'Тест{" " if self.incorrect_answers == 0 else " не "}завершен'),
                 flet.Row(
                     alignment=flet.MainAxisAlignment.CENTER,
                     controls=[
-                        flet.Column(
-                            controls=[
-                                flet.Text('Верных ответов: ' + str(self.correct_answers))
-                            ]
-                        ),
-                        flet.Column(
-                            controls=[
-                                flet.Text('Неверных ответов: ' + str(self.incorrect_answers))
-                            ]
-                        )
+                        flet.Column(controls=[flet.Text('Верных ответов: ' + str(self.correct_answers))]),
+                        flet.Column(controls=[flet.Text('Неверных ответов: ' + str(self.incorrect_answers))])
                     ]
                 ),
                 flet.Divider(height=100),
                 flet.TextButton(
                     text='Завершить тест',
-                    on_click=self.on_test_finish_click
+                    on_click=lambda _: self.on_test_finish_click()
                 )
             ]
 
         self.update()
 
         if self.incorrect_answers == 0 and test_ended:
-            for test in requests.get(
+            finished_tests = requests.get(
                 url=f'{settings.SERVER_URL}/finished_test/get_for_user/{self.page.session.get("session").User.user_id}',
-                params={
-                    'token': settings.TOKEN
-                }
-            ).json():
-                if test['user'] == self.page.session.get('session').User.user_id and test['test'] == self.test_id:
-                    return
+                params={'token': settings.TOKEN}
+            ).json()
 
-            requests.post(
-                url=f'{settings.SERVER_URL}/finished_test/create',
-                params={
-                    'token': settings.TOKEN,
-                },
-                json={
-                    'test': self.test_id,
-                    'user': self.page.session.get('session').User.user_id
-                }
-            )
+            if not any(test['user'] == self.page.session.get('session').User.user_id and test['test'] == self.test_id for test in finished_tests):
+                requests.post(
+                    url=f'{settings.SERVER_URL}/finished_test/create',
+                    params={'token': settings.TOKEN},
+                    json={'test': self.test_id, 'user': self.page.session.get('session').User.user_id}
+                )
 
     def build(self) -> None:
-        ni: int = 0
+        self.questions = flet.Column()
+        self.progress_bar = flet.ProgressBar(value=0 / len(self.test_datas))
 
-        self.progress_bar: flet.ProgressBar = flet.ProgressBar(value=0 / len(self.test_datas))
-
-        for test_data in self.test_datas:
+        for ni, test_data in enumerate(self.test_datas):
             self.questions.controls.append(
                 Question(
                     test_data=test_data,
                     self_id=ni
                 )
             )
-
-            ni += 1
 
         for q in self.questions.controls:
             q.visible = False
@@ -222,14 +196,12 @@ class Test(flet.SafeArea):
             alignment=flet.MainAxisAlignment.SPACE_BETWEEN,
             horizontal_alignment=flet.CrossAxisAlignment.CENTER,
             controls=[
-                flet.Container(
-                    content=self.questions
-                ),
+                flet.Container(content=self.questions),
                 flet.Divider(height=20),
                 self.progress_bar,
                 flet.TextButton(
                     text='Завершить тест',
-                    on_click=self.on_test_finish_click
+                    on_click=lambda _: self.on_test_finish_click()
                 )
             ],
         )

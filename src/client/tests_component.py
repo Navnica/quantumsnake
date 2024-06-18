@@ -24,14 +24,15 @@ class TestsComponent(flet.SafeArea):
         self.switch_container(self.content.controls[1])
 
     def destroy_create_page(self, event: flet.ControlEvent = None) -> None:
-        self.build()
+        self.content.controls[1] = flet.Container()
+        self.switch_container(self.content.controls[0])
         self.page.update()
+        self.build()
 
     async def get_tests(self):
         def show_load_indicator() -> None:
             self.page.dialog = flet.AlertDialog(
                 modal=True,
-
                 open=True,
                 content_padding=10,
                 content=flet.Row(
@@ -45,99 +46,75 @@ class TestsComponent(flet.SafeArea):
                     ]
                 )
             )
-
             self.page.update()
 
         def hide_load_indicator() -> None:
             self.page.dialog.open = False
             self.page.update()
 
-        def create_test(event: flet.ControlEvent) -> None:
+        async def create_test(event: flet.ControlEvent) -> None:
             async def collect_test_questions() -> None:
                 test_data: list = requests.get(
                     url=f'{settings.SERVER_URL}/test_question/get_for_test/{test_id}',
-                    params={
-                        'token': settings.TOKEN
-                    }
+                    params={'token': settings.TOKEN}
                 ).json()
 
                 await asleep(0.5)
                 hide_load_indicator()
                 self.page.controls[1].visible = False
-                self.content.controls[1].content = Test(
-                    test_data=test_data,
-                    test_id=test_id
-                )
+                new_test: Test = Test(test_data=test_data, test_id=test_id)
+                self.content.controls[1] = new_test
                 self.switch_container(self.content.controls[1])
 
             test_id: int = event.control.data
             show_load_indicator()
-            self.page.loop.create_task(collect_test_questions())
+            await collect_test_questions()
 
-        self.content.controls[0].content.controls[4].controls.extend([
-            flet.Container(
-                border_radius=10,
-                padding=20,
-                bgcolor=flet.colors.SURFACE_VARIANT if requests.get(
-                    url=f'{settings.SERVER_URL}/finished_test/finished_for_user/{self.page.session.get("session").User.user_id}/{test["id"]}',
-                    params={
-                        'token': settings.TOKEN
-                    }
-                ).json() == False else '#228B22',
-                content=flet.Column(
-                    horizontal_alignment=flet.CrossAxisAlignment.CENTER,
-                    controls=[
-                        flet.IconButton(
-                            icon=test['icon_name'],
-                            icon_size=50,
-                            data=int(test['id']),
-                            on_click=create_test,
-                            style=flet.ButtonStyle(
-                                shape=flet.RoundedRectangleBorder(
-                                    radius=10
+        tests = requests.get(
+            url=f'{settings.SERVER_URL}/test/get_all',
+            params={'token': settings.TOKEN}
+        ).json()
+
+        sorted_tests = sorted(tests, key=lambda x: x['relevance'])
+        for test in sorted_tests:
+            finished = requests.get(
+                url=f'{settings.SERVER_URL}/finished_test/finished_for_user/{self.page.session.get("session").User.user_id}/{test["id"]}',
+                params={'token': settings.TOKEN}
+            ).json()
+
+            self.content.controls[0].content.controls[4].controls.append(
+                flet.Container(
+                    border_radius=10,
+                    padding=20,
+                    bgcolor=flet.colors.SURFACE_VARIANT if not finished else '#228B22',
+                    content=flet.Column(
+                        horizontal_alignment=flet.CrossAxisAlignment.CENTER,
+                        controls=[
+                            flet.IconButton(
+                                icon=test['icon_name'],
+                                icon_size=50,
+                                data=int(test['id']),
+                                on_click=lambda e: self.page.loop.create_task(create_test(e)),
+                                style=flet.ButtonStyle(
+                                    shape=flet.RoundedRectangleBorder(radius=10)
                                 )
-                            )
-                        ),
-                        flet.Text(
-                            value=test['name']
-                        )
-                    ]
+                            ),
+                            flet.Text(value=test['name'])
+                        ]
+                    )
                 )
             )
-            for test in sorted(
-                requests.get(
-                    url=f'{settings.SERVER_URL}/test/get_all',
-                    params={
-                        'token': settings.TOKEN,
-                    }
-                ).json(),
-                key=lambda x: x['relevance']
-            )
-        ])
 
-        test_finished: int = len(
-            requests.get(
-                url=f'{settings.SERVER_URL}/finished_test/get_for_user/{self.page.session.get("session").User.user_id}',
-                params={
-                    'token': settings.TOKEN
-                }
-            ).json()
-        )
+        test_finished = len(requests.get(
+            url=f'{settings.SERVER_URL}/finished_test/get_for_user/{self.page.session.get("session").User.user_id}',
+            params={'token': settings.TOKEN}
+        ).json())
 
-        self.content. \
-            controls[0]. \
-            content.controls[0]. \
-            controls[1]. \
-            content. \
-            controls[1].value = str(test_finished) + '/' + str(
-            len(self.content.controls[0].content.controls[4].controls))
+        total_tests = len(self.content.controls[0].content.controls[4].controls)
 
+        self.content.controls[0].content.controls[0].controls[1].content.controls[1].value = f'{test_finished}/{total_tests}'
         try:
-            self.content. \
-                controls[0]. \
-                content.controls[0]. \
-                controls[0].value = test_finished / len(self.content.controls[0].content.controls[4].controls)
-
+            self.content.controls[0].content.controls[0].controls[0].value = test_finished / total_tests
         except ZeroDivisionError:
             pass
 
