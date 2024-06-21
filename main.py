@@ -1,12 +1,10 @@
 import flet
-
-import settings
+from src.tools.config import ConfigManager
 from src.client.auth_component import AuthComponent
 from src.client.tests_component import TestsComponent
 from src.client.database_component import DatabaseComponent
 from src.client.learning_component import LearningComponent
 from src.client.settings_component import SettingsComponent
-from settings import SETTINGS
 
 
 def main(page: flet.Page) -> None:
@@ -58,6 +56,10 @@ def main(page: flet.Page) -> None:
                 expand=True
             ),
         ])
+
+        if ConfigManager.get_config()['download_video_warning_status'] == 'skipped':
+            page.overlay[0] = 0
+
 
         page.update()
 
